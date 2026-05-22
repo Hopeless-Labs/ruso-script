@@ -30,7 +30,7 @@ ruso parse --script examples/http_health.ruso
 ruso-runtime = { git = "https://github.com/Hopeless-Labs/ruso-runtime.git", branch = "main" }
 ```
 
-Bytecode must target `ruso_runtime::VERSION` (currently **2**).
+Bytecode must target `ruso_runtime::VERSION` (currently **1**).
 
 ## Source map
 
