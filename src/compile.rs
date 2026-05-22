@@ -217,6 +217,9 @@ impl Compiler {
             | Stmt::Cve(_)
             | Stmt::Cwe(_)
             | Stmt::Reference(_)
+            | Stmt::Cvss(_)
+            | Stmt::CvssScore(_)
+            | Stmt::Mitigation(_)
             | Stmt::Http { .. }
             | Stmt::Dns(_)
             | Stmt::Tcp(_)

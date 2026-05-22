@@ -33,6 +33,9 @@ pub enum Stmt {
     Cve(String),
     Cwe(String),
     Reference(String),
+    Cvss(String),
+    CvssScore(String),
+    Mitigation(String),
 
     Set {
         name: String,
@@ -104,6 +107,9 @@ impl Stmt {
                 | Self::Cve(_)
                 | Self::Cwe(_)
                 | Self::Reference(_)
+                | Self::Cvss(_)
+                | Self::CvssScore(_)
+                | Self::Mitigation(_)
         )
     }
 

@@ -3,6 +3,9 @@ description "Example TCP probe: connect to port 22 and match the service banner"
 impact "Demonstrates tcp/send/match for TCP (target URL is unused; host/port are in the probe)"
 severity info
 author "ruso-lab"
+cwe "CWE-200"
+cvss_score "0.0"
+references "https://github.com/Hopeless-Labs/ruso-script/tree/main/examples"
 
 tcp ssh_banner {
     host "scanme.nmap.org"

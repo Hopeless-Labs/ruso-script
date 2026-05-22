@@ -24,6 +24,9 @@ pub(crate) fn build_metadata(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
         Rule::kw_cve => Stmt::Cve(value.map(unquote_string).unwrap_or_default()),
         Rule::kw_cwe => Stmt::Cwe(value.map(unquote_string).unwrap_or_default()),
         Rule::kw_references => Stmt::Reference(value.map(unquote_string).unwrap_or_default()),
+        Rule::kw_cvss => Stmt::Cvss(value.map(unquote_string).unwrap_or_default()),
+        Rule::kw_cvss_score => Stmt::CvssScore(value.map(unquote_string).unwrap_or_default()),
+        Rule::kw_mitigation => Stmt::Mitigation(value.map(unquote_string).unwrap_or_default()),
         rule => return Err(ParseError::UnexpectedRule(rule)),
     })
 }

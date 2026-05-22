@@ -100,6 +100,28 @@ fn parse_references() {
     );
 }
 
+#[test]
+fn parse_cvss() {
+    assert_eq!(
+        parse_one("cvss \"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H\""),
+        Stmt::Cvss("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H".into())
+    );
+}
+
+#[test]
+fn parse_cvss_score() {
+    assert_eq!(parse_one("cvss_score \"9.8\""), Stmt::CvssScore("9.8".into()));
+    assert_eq!(parse_one("cvss_score \"7.5\""), Stmt::CvssScore("7.5".into()));
+}
+
+#[test]
+fn parse_mitigation() {
+    assert_eq!(
+        parse_one("mitigation \"Apply security patch\""),
+        Stmt::Mitigation("Apply security patch".into())
+    );
+}
+
 // --- Variables ---
 
 #[test]

@@ -42,6 +42,9 @@ kw_author = @{ A ~ U ~ T ~ H ~ O ~ R }
 kw_cve = @{ C_ ~ V ~ E }
 kw_cwe = @{ C_ ~ W ~ E }
 kw_references = @{ R ~ E ~ F ~ E ~ R ~ E ~ N ~ C_ ~ E ~ S }
+kw_cvss = @{ C_ ~ V ~ S ~ S }
+kw_cvss_score = @{ C_ ~ V ~ S ~ S ~ "_" ~ S ~ C_ ~ O ~ R ~ E }
+kw_mitigation = @{ M ~ I ~ T ~ I ~ G ~ A ~ T ~ I ~ O ~ N }
 kw_evidence = @{ E ~ V ~ I ~ D ~ E ~ N ~ C_ ~ E }
 kw_report = @{ R ~ E ~ P ~ O ~ R ~ T }
 
@@ -274,6 +277,9 @@ metadata_stmt = {
     | kw_cve ~ string
     | kw_cwe ~ string
     | kw_references ~ string
+    | kw_cvss ~ string
+    | kw_cvss_score ~ string
+    | kw_mitigation ~ string
 }
 
 set_stmt = { kw_set ~ ident ~ (string | interpolation) }

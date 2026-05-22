@@ -22,6 +22,8 @@ cd ../ruso-cli && cargo build --release
 
 **Concepts:** `http` probe, `send`, `match` on `status` and `body`.
 
+**Metadata:** `references` only (info/demo check).
+
 **Run:**
 
 ```bash
@@ -38,6 +40,8 @@ Requires a reachable HTTPS target; adjust matchers to match the real response.
 
 **Concepts:** `dns` without `port`/`payload`, `match lookup.answer`.
 
+**Metadata:** `references` (resolver-mode demo).
+
 **Run:** `--target` is unused for resolution; host is `one.one.one.one` in the script.
 
 ---
@@ -51,6 +55,8 @@ Requires a reachable HTTPS target; adjust matchers to match the real response.
 - `host` + `port 53` + hex `payload`  
 - Binary DNS packet (query for `example.com`)  
 - `match wire_a.response regex '.+'` (non-empty reply)
+
+**Metadata:** `cwe`, `references` (wire-format demo).
 
 **Run:** Needs UDP/53 reachability to `1.1.1.1` (or change `host`).
 
@@ -66,6 +72,8 @@ Requires a reachable HTTPS target; adjust matchers to match the real response.
 - SSH sends banner on connect  
 - `match ssh_banner.response contains "SSH"`
 
+**Metadata:** `cwe`, `cvss_score`, `references` (banner disclosure / fingerprinting).
+
 **Run:** Example uses `scanme.nmap.org:22`; use only on systems you are allowed to scan.
 
 ---
@@ -80,6 +88,8 @@ Requires a reachable HTTPS target; adjust matchers to match the real response.
 - `match redis_ping.response contains "PONG"`  
 - `evidence regex 'PONG'`
 
+**Metadata:** full advisory block — `cve`, `cwe`, `cvss`, `cvss_score`, `references`, `mitigation` (repeatable lines).
+
 **Run:** Set `host` in script to your lab Redis (default `127.0.0.1:6379`).
 
 ---
@@ -92,6 +102,8 @@ Requires a reachable HTTPS target; adjust matchers to match the real response.
 
 - `udp` + `port 123` + 48 zero bytes (NTP client request)  
 - `pool.ntp.org` as example host
+
+**Metadata:** `cve`, `cwe`, `cvss`, `cvss_score`, `references`, `mitigation` (NTP amplification class).
 
 **Run:** May timeout on firewalled networks; validates UDP send/receive path.
 
@@ -106,6 +118,8 @@ Requires a reachable HTTPS target; adjust matchers to match the real response.
 - `session true` — reuse connection  
 - `read_idle 200ms` — aggregate multi-packet reads  
 - `repeat 2 { send … match … }` — generic multi-step without new opcodes  
+
+**Metadata:** `cwe`, `cvss_score`, `references`, `mitigation` (session reuse on unauthenticated Redis).
 
 **Run:** Requires Redis on `127.0.0.1:6379` (same as redis example).
 
@@ -125,7 +139,7 @@ Requires a reachable HTTPS target; adjust matchers to match the real response.
 ## Writing your own
 
 1. Copy the closest example.  
-2. Change metadata for your finding (`name`, `severity`, `cve`, `cwe`, `references`, …).  
+2. Change metadata for your finding (`name`, `severity`, `cve`, `cwe`, `references`, `cvss`, `cvss_score`, `mitigation`, …).  
 3. Adjust `host`/`port`/`payload` or HTTP `path`.  
 4. Tighten matchers to reduce false positives.  
 5. Add `evidence` for report body.

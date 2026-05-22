@@ -19,6 +19,9 @@ pub fn build_program_spec(statements: &[Stmt]) -> ProgramSpec {
             Stmt::Cve(value) => spec.metadata.cve.push(value.clone()),
             Stmt::Cwe(value) => spec.metadata.cwe.push(value.clone()),
             Stmt::Reference(value) => spec.metadata.references.push(value.clone()),
+            Stmt::Cvss(value) => spec.metadata.cvss.push(value.clone()),
+            Stmt::CvssScore(value) => spec.metadata.cvss_score.push(value.clone()),
+            Stmt::Mitigation(value) => spec.metadata.mitigation.push(value.clone()),
             Stmt::Http { name, items } => {
                 spec.probes
                     .insert(name.clone(), ProbeKind::Http(http_spec(items)));
@@ -106,7 +109,7 @@ mod tests {
     }
 
     #[test]
-    fn collects_cve_cwe_references() {
+    fn collects_cve_cwe_references_cvss_mitigation() {
         let statements = vec![
             Stmt::Name("Refs".into()),
             Stmt::Cve("CVE-2024-1".into()),
@@ -114,6 +117,11 @@ mod tests {
             Stmt::Cwe("CWE-79".into()),
             Stmt::Reference("https://a.example".into()),
             Stmt::Reference("https://b.example".into()),
+            Stmt::Cvss("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H".into()),
+            Stmt::CvssScore("9.8".into()),
+            Stmt::CvssScore("7.5".into()),
+            Stmt::Mitigation("Patch the service".into()),
+            Stmt::Mitigation("Restrict network access".into()),
         ];
         let spec = build_program_spec(&statements);
         assert_eq!(spec.metadata.cve, vec!["CVE-2024-1", "CVE-2024-2"]);
@@ -121,6 +129,15 @@ mod tests {
         assert_eq!(
             spec.metadata.references,
             vec!["https://a.example", "https://b.example"]
+        );
+        assert_eq!(
+            spec.metadata.cvss,
+            vec!["CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"]
+        );
+        assert_eq!(spec.metadata.cvss_score, vec!["9.8", "7.5"]);
+        assert_eq!(
+            spec.metadata.mitigation,
+            vec!["Patch the service", "Restrict network access"]
         );
     }
 }
