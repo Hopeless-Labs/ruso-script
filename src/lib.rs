@@ -2,9 +2,9 @@
 //!
 //! # Developer documentation
 //!
-//! - [DSL reference](../docs/DSL_REFERENCE.md)
-//! - [Compiler](../docs/COMPILER.md)
-//! - [Examples](../docs/EXAMPLES.md)
+//! - [DSL reference](https://github.com/Hopeless-Labs/ruso-script/blob/main/docs/DSL_REFERENCE.md)
+//! - [Compiler](https://github.com/Hopeless-Labs/ruso-script/blob/main/docs/COMPILER.md)
+//! - [Examples](https://github.com/Hopeless-Labs/ruso-script/blob/main/docs/EXAMPLES.md)
 
 mod compile;
 mod spec_build;

@@ -4,9 +4,16 @@ Parser and compiler for the Ruso DSL (`.ruso` → `BytecodeProgram`).
 
 ## Documentation
 
-- [DSL reference](../docs/DSL_REFERENCE.md)
-- [Compiler pipeline](../docs/COMPILER.md)
-- [Examples](../docs/EXAMPLES.md)
+Full developer docs are in **[`docs/`](docs/README.md)**:
+
+| Doc | Topic |
+|-----|--------|
+| [Architecture overview](docs/OVERVIEW.md) | How script, runtime, and CLI connect |
+| [DSL reference](docs/DSL_REFERENCE.md) | Syntax for `.ruso` checks |
+| [Compiler](docs/COMPILER.md) | Parse → AST → bytecode |
+| [Examples](docs/EXAMPLES.md) | `examples/*.ruso` walkthrough |
+
+Runtime bytecode and VM: [ruso-runtime/docs](https://github.com/Hopeless-Labs/ruso-runtime/tree/main/docs). CLI: [ruso-cli/docs](https://github.com/Hopeless-Labs/ruso-cli/tree/main/docs).
 
 ## Dependencies
 
@@ -26,7 +33,7 @@ let bytecode = compile(&program);
 
 ## Layout
 
-```
+```text
 src/
   compile.rs          # AST → Instr
   spec_build.rs       # AST → ProgramSpec
@@ -34,15 +41,16 @@ src/
     grammar.pest      # syntax
     ast.rs
     parser/           # Pest builders
-    syntax_tests.rs
-examples/*.ruso
+examples/*.ruso       # example checks
+docs/                 # documentation
 ```
 
-## Examples
+## Try examples
 
 ```bash
-cargo build -p ruso-cli
+# Install ruso-cli from https://github.com/Hopeless-Labs/ruso-cli
 ruso parse --script examples/http_health.ruso
+ruso scan --script examples/http_health.ruso --target https://example.com
 ```
 
 ## License
