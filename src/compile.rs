@@ -271,7 +271,7 @@ mod tests {
     };
     use crate::script::Program;
 
-    use super::compile;
+    use super::{compile, CompileError};
 
     #[test]
     fn compile_skips_metadata_and_probe_definitions() {
