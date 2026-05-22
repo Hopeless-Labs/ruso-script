@@ -1,5 +1,7 @@
 # ruso-script
 
+> **Development status:** This project is under active development. The DSL, compiler output, and grammar may change without notice. Not recommended for production use yet.
+
 Parser and compiler for the Ruso DSL (`.ruso` → `BytecodeProgram`).
 
 ## Documentation
