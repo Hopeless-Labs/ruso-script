@@ -1,0 +1,15 @@
+name "UDP NTP mode request"
+description "Generic udp probe: host, port, optional payload (48 zero bytes = NTP client request)"
+impact "Same block shape as dns/tcp — swap keyword only"
+severity info
+author "ruso-lab"
+
+udp ntp {
+    host "pool.ntp.org"
+    port 123
+    payload "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+}
+
+send ntp
+
+match ntp.response regex '.+'

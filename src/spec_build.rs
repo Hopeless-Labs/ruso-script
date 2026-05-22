@@ -1,0 +1,104 @@
+use ruso_runtime::{HttpRequestSpec, ProbeKind, ProgramSpec, SocketProbeSpec};
+
+use crate::script::ast::{HttpItem, SocketProbe, Stmt};
+
+pub fn build_program_spec(statements: &[Stmt]) -> ProgramSpec {
+    let mut spec = ProgramSpec {
+        probes: std::collections::HashMap::new(),
+        metadata: Default::default(),
+    };
+
+    for stmt in statements {
+        match stmt {
+            Stmt::Name(value) => spec.metadata.name = Some(value.clone()),
+            Stmt::Description(value) => spec.metadata.description = Some(value.clone()),
+            Stmt::Impact(value) => spec.metadata.impact = Some(value.clone()),
+            Stmt::Severity(value) => spec.metadata.severity = Some(value.clone()),
+            Stmt::Author(value) => spec.metadata.author = Some(value.clone()),
+            Stmt::Report(value) => spec.metadata.report_title = Some(value.clone()),
+            Stmt::Http { name, items } => {
+                spec.probes
+                    .insert(name.clone(), ProbeKind::Http(http_spec(items)));
+            }
+            Stmt::Dns(probe) => {
+                spec.probes
+                    .insert(probe.name.clone(), ProbeKind::Dns(socket_spec(probe)));
+            }
+            Stmt::Tcp(probe) => {
+                spec.probes
+                    .insert(probe.name.clone(), ProbeKind::Tcp(socket_spec(probe)));
+            }
+            Stmt::Udp(probe) => {
+                spec.probes
+                    .insert(probe.name.clone(), ProbeKind::Udp(socket_spec(probe)));
+            }
+            _ => {}
+        }
+    }
+
+    spec
+}
+
+fn socket_spec(probe: &SocketProbe) -> SocketProbeSpec {
+    SocketProbeSpec {
+        host: probe.host.clone(),
+        port: probe.port,
+        payload: probe.payload.clone(),
+        tls: probe.tls,
+        session: probe.session,
+        read_max: probe.read_max,
+        read_idle_ms: probe.read_idle_ms,
+    }
+}
+
+fn http_spec(items: &[HttpItem]) -> HttpRequestSpec {
+    let mut spec = HttpRequestSpec::default();
+    for item in items {
+        match item {
+            HttpItem::Method(method) => spec.method = method.clone(),
+            HttpItem::Path(path) => spec.path = path.clone(),
+            HttpItem::Timeout(value) => spec.timeout = Some(value.clone()),
+            HttpItem::FollowRedirect(value) => spec.follow_redirect = Some(*value),
+            HttpItem::VerifySsl(value) => spec.verify_ssl = Some(*value),
+            HttpItem::Proxy(value) => spec.proxy = Some(value.clone()),
+            HttpItem::UserAgent(value) => spec.user_agent = Some(value.clone()),
+            HttpItem::Header { name, value } => spec.headers.push((name.clone(), value.clone())),
+            HttpItem::Cookie { name, value } => spec.cookies.push((name.clone(), value.clone())),
+            HttpItem::Query { name, value } => spec.queries.push((name.clone(), value.clone())),
+            HttpItem::Data(body) => spec.data_body = Some(body.clone()),
+            HttpItem::Json(body) => spec.json_body = Some(body.clone()),
+            HttpItem::Raw(body) => spec.raw_body = Some(body.clone()),
+            HttpItem::BodyBytes(hex) => spec.body_bytes = Some(hex.clone()),
+            HttpItem::Multipart(body) => spec.multipart_body = Some(body.clone()),
+        }
+    }
+    spec
+}
+
+#[cfg(test)]
+mod tests {
+    use ruso_runtime::ProbeKind;
+
+    use super::*;
+    use crate::script::ast::{HttpItem, HttpMethod, Severity, Stmt};
+
+    #[test]
+    fn collects_metadata_and_http_probe() {
+        let statements = vec![
+            Stmt::Name("Test Check".into()),
+            Stmt::Severity(Severity::High),
+            Stmt::Http {
+                name: "home".into(),
+                items: vec![
+                    HttpItem::Method(HttpMethod::Get),
+                    HttpItem::Path("/".into()),
+                ],
+            },
+        ];
+        let spec = build_program_spec(&statements);
+        assert_eq!(spec.metadata.name.as_deref(), Some("Test Check"));
+        assert_eq!(spec.metadata.severity, Some(Severity::High));
+        let probe = spec.probes.get("home").expect("home probe");
+        assert!(matches!(probe, ProbeKind::Http(_)));
+    }
+}

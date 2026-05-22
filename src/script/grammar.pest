@@ -1,0 +1,330 @@
+// Ruso script DSL grammar — see .notes.txt
+
+WHITESPACE = _{ " " | "\t" }
+NEWLINE = _{ "\r\n" | "\n" | "\r" }
+COMMENT = _{ "#" ~ (!NEWLINE ~ ANY)* }
+BLANK = _{ (WHITESPACE | NEWLINE)* }
+pad = { (WHITESPACE | NEWLINE)+ }
+
+// --- Case-insensitive keyword letters ---
+N = { "n" | "N" }
+A = { "a" | "A" }
+M = { "m" | "M" }
+E = { "e" | "E" }
+D = { "d" | "D" }
+S = { "s" | "S" }
+C_ = { "c" | "C" }
+R = { "r" | "R" }
+I = { "i" | "I" }
+P = { "p" | "P" }
+T = { "t" | "T" }
+O = { "o" | "O" }
+U = { "u" | "U" }
+L = { "l" | "L" }
+H = { "h" | "H" }
+G = { "g" | "G" }
+F = { "f" | "F" }
+W = { "w" | "W" }
+Y = { "y" | "Y" }
+B = { "b" | "B" }
+V = { "v" | "V" }
+X = { "x" | "X" }
+K = { "k" | "K" }
+Q = { "q" | "Q" }
+J = { "j" | "J" }
+Z = { "z" | "Z" }
+
+kw_name = @{ N ~ A ~ M ~ E }
+kw_description = @{ D ~ E ~ S ~ C_ ~ R ~ I ~ P ~ T ~ I ~ O ~ N }
+kw_impact = @{ I ~ M ~ P ~ A ~ C_ ~ T }
+kw_severity = @{ S ~ E ~ V ~ E ~ R ~ I ~ T ~ Y }
+kw_author = @{ A ~ U ~ T ~ H ~ O ~ R }
+kw_evidence = @{ E ~ V ~ I ~ D ~ E ~ N ~ C_ ~ E }
+kw_report = @{ R ~ E ~ P ~ O ~ R ~ T }
+
+kw_http = @{ H ~ T ~ T ~ P }
+kw_method = @{ M ~ E ~ T ~ H ~ O ~ D }
+kw_path = @{ P ~ A ~ T ~ H }
+kw_send = @{ S ~ E ~ N ~ D }
+
+kw_get = @{ G ~ E ~ T }
+kw_post = @{ P ~ O ~ S ~ T }
+kw_put = @{ P ~ U ~ T }
+kw_patch = @{ P ~ A ~ T ~ C_ ~ H }
+kw_delete = @{ D ~ E ~ L ~ E ~ T ~ E }
+
+kw_header = @{ H ~ E ~ A ~ D ~ E ~ R }
+kw_cookie = @{ C_ ~ O ~ O ~ K ~ I ~ E }
+kw_query = @{ Q ~ U ~ E ~ R ~ Y }
+
+kw_data = @{ D ~ A ~ T ~ A }
+kw_json = @{ J ~ S ~ O ~ N }
+kw_raw = @{ R ~ A ~ W }
+kw_body_bytes = @{ B ~ O ~ D ~ Y ~ "_" ~ B ~ Y ~ T ~ E ~ S }
+kw_multipart = @{ M ~ U ~ L ~ T ~ I ~ P ~ A ~ R ~ T }
+kw_bytes = @{ B ~ Y ~ T ~ E ~ S }
+kw_part = @{ P ~ A ~ R ~ T }
+kw_filename = @{ F ~ I ~ L ~ E ~ N ~ A ~ M ~ E }
+kw_content = @{ C_ ~ O ~ N ~ T ~ E ~ N ~ T }
+
+kw_match = @{ M ~ A ~ T ~ C_ ~ H }
+kw_assert = @{ A ~ S ~ S ~ E ~ R ~ T }
+kw_extract = @{ E ~ X ~ T ~ R ~ A ~ C_ ~ T }
+kw_set = @{ S ~ E ~ T }
+
+kw_if = @{ I ~ F }
+kw_end = @{ E ~ N ~ D }
+kw_all = @{ A ~ L ~ L }
+kw_any = @{ A ~ N ~ Y }
+
+kw_from = @{ F ~ R ~ O ~ M }
+kw_contains = @{ C_ ~ O ~ N ~ T ~ A ~ I ~ N ~ S }
+kw_not_contains = @{ N ~ O ~ T ~ "_" ~ C_ ~ O ~ N ~ T ~ A ~ I ~ N ~ S }
+kw_regex = @{ R ~ E ~ G ~ E ~ X }
+kw_as = @{ A ~ S }
+kw_save = @{ S ~ A ~ V ~ E }
+
+kw_status = @{ S ~ T ~ A ~ T ~ U ~ S }
+kw_body = @{ B ~ O ~ D ~ Y }
+kw_response_time = @{ R ~ E ~ S ~ P ~ O ~ N ~ S ~ E ~ "_" ~ T ~ I ~ M ~ E }
+kw_response_size = @{ R ~ E ~ S ~ P ~ O ~ N ~ S ~ E ~ "_" ~ S ~ I ~ Z ~ E }
+kw_banner = @{ B ~ A ~ N ~ N ~ E ~ R }
+kw_response = @{ R ~ E ~ S ~ P ~ O ~ N ~ S ~ E }
+kw_answer = @{ A ~ N ~ S ~ W ~ E ~ R }
+
+kw_timeout = @{ T ~ I ~ M ~ E ~ O ~ U ~ T }
+kw_follow_redirect = @{ F ~ O ~ L ~ L ~ O ~ W ~ "_" ~ R ~ E ~ D ~ I ~ R ~ E ~ C_ ~ T }
+kw_verify_ssl = @{ V ~ E ~ R ~ I ~ F ~ Y ~ "_" ~ S ~ S ~ L }
+kw_proxy = @{ P ~ R ~ O ~ X ~ Y }
+kw_user_agent = @{ U ~ S ~ E ~ R ~ "_" ~ A ~ G ~ E ~ N ~ T }
+
+kw_retry = @{ R ~ E ~ T ~ R ~ Y }
+kw_retry_delay = @{ R ~ E ~ T ~ R ~ Y ~ "_" ~ D ~ E ~ L ~ A ~ Y }
+kw_sleep = @{ S ~ L ~ E ~ E ~ P }
+
+kw_stop = @{ S ~ T ~ O ~ P }
+kw_fail = @{ F ~ A ~ I ~ L }
+kw_continue = @{ C_ ~ O ~ N ~ T ~ I ~ N ~ U ~ E }
+kw_exit = @{ E ~ X ~ I ~ T }
+
+kw_dns = @{ D ~ N ~ S }
+kw_tcp = @{ T ~ C_ ~ P }
+kw_udp = @{ U ~ D ~ P }
+kw_host = @{ H ~ O ~ S ~ T }
+kw_port = @{ P ~ O ~ R ~ T }
+kw_payload = @{ P ~ A ~ Y ~ L ~ O ~ A ~ D }
+kw_tls = @{ T ~ L ~ S }
+kw_session = @{ S ~ E ~ S ~ S ~ I ~ O ~ N }
+kw_read_max = @{ R ~ E ~ A ~ D ~ "_" ~ M ~ A ~ X }
+kw_read_idle = @{ R ~ E ~ A ~ D ~ "_" ~ I ~ D ~ L ~ E }
+kw_repeat = @{ R ~ E ~ P ~ E ~ A ~ T }
+kw_break = @{ B ~ R ~ E ~ A ~ K }
+
+// --- Literals ---
+ident = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
+dot = { "." }
+
+string = @{
+    "\"" ~
+    (interpolation | !("\"" | "\\") ~ ANY | "\\" ~ ANY)* ~
+    "\""
+}
+
+regex_lit = @{
+    "'" ~
+    (!"'" ~ ANY)* ~
+    "'"
+}
+
+interpolation = { "{{" ~ BLANK ~ ident ~ BLANK ~ "}}" }
+
+number = @{ ASCII_DIGIT+ }
+duration = @{ ASCII_DIGIT+ ~ ("ms" | "s") }
+
+bool_true = @{ T ~ R ~ U ~ E }
+bool_false = @{ F ~ A ~ L ~ S ~ E }
+bool_lit = { bool_true | bool_false }
+
+severity_lit = @{
+    ("l"|"L") ~ ("o"|"O") ~ ("w"|"W")
+    | ("m"|"M") ~ ("e"|"E") ~ ("d"|"D") ~ ("i"|"I") ~ ("u"|"U") ~ ("m"|"M")
+    | ("h"|"H") ~ ("i"|"I") ~ ("g"|"G") ~ ("h"|"H")
+    | ("c"|"C") ~ ("r"|"R") ~ ("i"|"I") ~ ("t"|"T") ~ ("i"|"I") ~ ("c"|"C") ~ ("a"|"A") ~ ("l"|"L")
+    | ("i"|"I") ~ ("n"|"N") ~ ("f"|"F") ~ ("o"|"O")
+}
+
+path_lit = { string }
+
+hex_lit = @{
+    "\"" ~
+    (ASCII_HEX_DIGIT | " " | "\t")* ~
+    "\""
+}
+
+cmp_op = { "==" | "!=" | "<=" | ">=" | "<" | ">" }
+neq_op = { "!=" }
+cmp_rhs = { string | duration | number }
+
+// --- Qualified field access (home.status, login.body, etc.) ---
+target_ref = { ident }
+
+qualified_field = {
+    target_ref ~ dot ~ kw_status
+    | target_ref ~ dot ~ kw_body
+    | target_ref ~ dot ~ kw_header ~ string
+    | target_ref ~ dot ~ kw_response_time
+    | target_ref ~ dot ~ kw_response_size
+    | target_ref ~ dot ~ kw_answer
+    | target_ref ~ dot ~ kw_banner
+    | target_ref ~ dot ~ kw_response
+}
+
+qualified_expr = {
+    qualified_field ~ cmp_op ~ cmp_rhs
+    | qualified_field ~ neq_op ~ cmp_rhs
+    | qualified_field ~ kw_contains ~ string
+    | qualified_field ~ kw_not_contains ~ string
+    | qualified_field ~ kw_regex ~ regex_lit
+}
+
+// --- Object bodies ---
+l_brace = { "{" }
+r_brace = { "}" }
+
+body_pair = { string ~ ":" ~ body_value }
+body_value = { string | interpolation | object_body | bytes_value | part_value }
+bytes_value = { kw_bytes ~ hex_lit }
+part_value = { part_block }
+part_block = { kw_part ~ l_brace ~ (pad? ~ part_item)* ~ pad? ~ r_brace }
+part_item = {
+    kw_filename ~ string
+    | kw_content ~ (string | regex_lit)
+    | kw_bytes ~ hex_lit
+}
+object_body = { l_brace ~ (pad? ~ body_pair)* ~ pad? ~ r_brace }
+
+// --- HTTP block items ---
+http_method = { kw_get | kw_post | kw_put | kw_patch | kw_delete }
+
+http_option = {
+    kw_timeout ~ duration
+    | kw_follow_redirect ~ bool_lit
+    | kw_verify_ssl ~ bool_lit
+    | kw_proxy ~ string
+    | kw_user_agent ~ string
+}
+
+header_item = { kw_header ~ string ~ string }
+cookie_item = { kw_cookie ~ string ~ (string | interpolation) }
+query_item = { kw_query ~ string ~ (string | interpolation) }
+data_item = { kw_data ~ object_body }
+json_item = { kw_json ~ object_body }
+raw_item = { kw_raw ~ regex_lit }
+body_bytes_item = { kw_body_bytes ~ hex_lit }
+multipart_item = { kw_multipart ~ object_body }
+
+method_item = { kw_method ~ http_method }
+path_item = { kw_path ~ path_lit }
+
+http_item = {
+    method_item
+    | path_item
+    | http_option
+    | header_item
+    | cookie_item
+    | query_item
+    | data_item
+    | json_item
+    | raw_item
+    | body_bytes_item
+    | multipart_item
+}
+
+http_block = {
+    kw_http ~ ident ~ l_brace ~ (pad ~ http_item)* ~ pad? ~ r_brace
+}
+
+// --- DNS / TCP / UDP (generic socket probes: host, port?, payload?) ---
+payload_item = { kw_payload ~ (string | hex_lit) }
+socket_item = {
+    kw_host ~ string
+    | kw_port ~ number
+    | payload_item
+    | kw_tls ~ bool_lit
+    | kw_session ~ bool_lit
+    | kw_read_max ~ number
+    | kw_read_idle ~ duration
+}
+
+dns_block = { kw_dns ~ ident ~ l_brace ~ (pad ~ socket_item)* ~ pad? ~ r_brace }
+tcp_block = { kw_tcp ~ ident ~ l_brace ~ (pad ~ socket_item)* ~ pad? ~ r_brace }
+udp_block = { kw_udp ~ ident ~ l_brace ~ (pad ~ socket_item)* ~ pad? ~ r_brace }
+
+// --- Statements ---
+metadata_stmt = {
+    kw_name ~ string
+    | kw_description ~ string
+    | kw_impact ~ string
+    | kw_severity ~ severity_lit
+    | kw_author ~ string
+    | kw_report ~ string
+}
+
+set_stmt = { kw_set ~ ident ~ (string | interpolation) }
+
+send_payload = { kw_payload ~ (string | hex_lit) }
+send_stmt = { kw_send ~ ident ~ (send_payload)? }
+
+match_stmt = { kw_match ~ qualified_expr }
+assert_stmt = { kw_assert ~ qualified_expr }
+
+match_group = {
+    kw_match ~ kw_all ~ (pad ~ qualified_expr)* ~ pad? ~ kw_end
+    | kw_match ~ kw_any ~ (pad ~ qualified_expr)* ~ pad? ~ kw_end
+}
+
+extract_source = {
+    target_ref ~ dot ~ kw_body
+    | target_ref ~ dot ~ kw_header ~ string
+}
+
+extract_stmt = {
+    kw_extract ~ ident ~ pad? ~ kw_from ~ extract_source ~ (pad? ~ kw_regex ~ regex_lit)?
+}
+
+if_block = { kw_if ~ qualified_expr ~ (pad ~ !kw_end ~ statement)* ~ pad? ~ kw_end }
+repeat_block = { kw_repeat ~ number ~ (pad ~ !kw_end ~ statement)* ~ pad? ~ kw_end }
+
+save_stmt = { kw_save ~ ident ~ kw_as ~ ident }
+
+evidence_stmt = {
+    kw_evidence ~ target_ref ~ dot ~ kw_body
+    | kw_evidence ~ kw_regex ~ regex_lit
+}
+
+flow_stmt = { kw_stop | kw_fail | kw_continue | kw_break | kw_exit }
+retry_stmt = { kw_retry_delay ~ duration | kw_retry ~ ident ~ number }
+sleep_stmt = { kw_sleep ~ duration }
+
+statement = {
+    metadata_stmt
+    | set_stmt
+    | http_block
+    | dns_block
+    | tcp_block
+    | udp_block
+    | send_stmt
+    | match_stmt
+    | match_group
+    | assert_stmt
+    | extract_stmt
+    | if_block
+    | repeat_block
+    | save_stmt
+    | evidence_stmt
+    | flow_stmt
+    | retry_stmt
+    | sleep_stmt
+}
+
+program = { SOI ~ (COMMENT | NEWLINE | statement | pad ~ statement)* ~ EOI }

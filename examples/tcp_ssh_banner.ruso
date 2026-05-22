@@ -1,0 +1,15 @@
+name "TCP SSH banner grab"
+description "Example TCP probe: connect to port 22 and match the service banner"
+impact "Demonstrates tcp/send/match for TCP (target URL is unused; host/port are in the probe)"
+severity info
+author "ruso-lab"
+
+tcp ssh_banner {
+    host "scanme.nmap.org"
+    port 22
+    # No payload: SSH sends its banner on connect.
+}
+
+send ssh_banner
+
+match ssh_banner.response contains "SSH"

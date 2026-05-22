@@ -1,0 +1,13 @@
+name "DNS A record lookup"
+description "Resolver mode: dns with only host uses system DNS (no port/payload)"
+impact "Same socket fields as tcp/udp — add port and payload for wire-format DNS queries"
+severity info
+author "ruso-lab"
+
+dns lookup {
+    host "one.one.one.one"
+}
+
+send lookup
+
+match lookup.answer contains "1.1.1.1"

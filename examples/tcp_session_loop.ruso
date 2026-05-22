@@ -1,0 +1,18 @@
+name "TCP session with repeat"
+description "Stateful dialog: session + multiple send in a repeat loop (generic, not protocol-specific)"
+impact "Demonstrates session, read_idle, and repeat for multi-step socket checks"
+severity info
+author "ruso-lab"
+
+tcp dialog {
+    host "127.0.0.1"
+    port 6379
+    session true
+    read_idle 200ms
+    payload "*1\r\n$4\r\nPING\r\n"
+}
+
+repeat 2 {
+    send dialog
+    match dialog.response contains "PONG"
+}

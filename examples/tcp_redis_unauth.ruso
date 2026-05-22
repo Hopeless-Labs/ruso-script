@@ -1,0 +1,20 @@
+name "Redis exposed without authentication"
+description "Send Redis RESP PING on TCP/6379; unauthenticated instances reply with PONG"
+impact "Unauthenticated Redis allows data read/write, RCE via module abuse, and lateral movement"
+severity critical
+author "ruso-lab"
+
+# Set host to the scan target IP (CLI --target does not override tcp host).
+tcp redis_ping {
+    host "127.0.0.1"
+    port 6379
+    payload "*1\r\n$4\r\nPING\r\n"
+}
+
+send redis_ping
+
+match redis_ping.response contains "PONG"
+match redis_ping.response not_contains "NOAUTH"
+match redis_ping.response not_contains "ERR"
+
+evidence regex 'PONG'

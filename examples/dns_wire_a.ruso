@@ -1,0 +1,17 @@
+name "DNS wire-format A query"
+description "UDP DNS query to a resolver: host + port 53 + binary payload (hex)"
+impact "Wire-mode dns uses the same socket fields as tcp/udp; only host alone triggers OS resolver"
+severity info
+author "ruso-lab"
+
+# A query for example.com (ID aa aa, RD, QTYPE A)
+dns wire_a {
+    host "1.1.1.1"
+    port 53
+    payload "aaaa010000010000000000076578616d706c6503636f6d0000010001"
+}
+
+send wire_a
+
+# DNS replies are binary; require a non-empty UDP response.
+match wire_a.response regex '.+'
