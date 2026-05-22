@@ -10,7 +10,7 @@ name = "ruso_script"
 path = "src/lib.rs"
 
 [dependencies]
-ruso-runtime = { path = "../ruso-runtime" }
+ruso-runtime = { git = "https://github.com/Hopeless-Labs/ruso-runtime.git", branch = "main" }
 pest = "2.8.1"
 pest_derive = "2.8.1"
 thiserror = "2.0.12"

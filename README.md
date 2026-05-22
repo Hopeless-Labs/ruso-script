@@ -8,6 +8,12 @@ Parser and compiler for the Ruso DSL (`.ruso` → `BytecodeProgram`).
 - [Compiler pipeline](../docs/COMPILER.md)
 - [Examples](../docs/EXAMPLES.md)
 
+## Dependencies
+
+```toml
+ruso-runtime = { git = "https://github.com/Hopeless-Labs/ruso-runtime.git", branch = "main" }
+```
+
 ## Usage
 
 ```rust
