@@ -55,7 +55,7 @@ http <name> {
     path "/api/health"
     timeout 30s
     follow_redirect true
-    verify_ssl true
+    verify_ssl true   # optional; overrides runtime default (skip verify). Use true for strict HTTPS checks
     proxy "http://127.0.0.1:8080"
     user_agent "ruso/1.0"
     header "X-Custom" "value"

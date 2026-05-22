@@ -9,7 +9,6 @@ http health {
     path "/get"
     timeout 5s
     follow_redirect false
-    verify_ssl false
     header "Accept" "application/json"
 }
 
