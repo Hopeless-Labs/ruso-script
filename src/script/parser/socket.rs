@@ -22,57 +22,57 @@ pub(crate) fn build_socket_block(pair: Pair<Rule>) -> Result<SocketProbe, ParseE
     let mut read_idle_ms = 0u32;
 
     for item in inner.filter(|p| p.as_rule() == Rule::socket_item) {
-        match item.as_rule() {
-            Rule::payload_item => {
-                let mut parts = item.into_inner();
-                let _kw = parts.next();
-                payload = Some(parse_payload_value(parts.next())?);
+        if let Some(payload_pair) = item.clone().into_inner().find(|p| p.as_rule() == Rule::payload_item)
+        {
+            let value = payload_pair
+                .into_inner()
+                .find(|p| matches!(p.as_rule(), Rule::string | Rule::hex_lit));
+            payload = Some(parse_payload_value(value)?);
+            continue;
+        }
+
+        let keyword = socket_item_keyword(&item);
+        let mut parts = item.into_inner();
+        match keyword.as_str() {
+            "host" => {
+                host = parts
+                    .find(|p| p.as_rule() == Rule::string)
+                    .map(unquote_string)
+                    .unwrap_or_default();
             }
-            _ => {
-                let mut parts = item.into_inner();
-                let keyword = parts.next();
-                match keyword.map(|p| p.as_rule()) {
-                    Some(Rule::kw_host) => {
-                        host = parts
-                            .find(|p| p.as_rule() == Rule::string)
-                            .map(unquote_string)
-                            .unwrap_or_default();
-                    }
-                    Some(Rule::kw_port) => {
-                        port = parts
-                            .find(|p| p.as_rule() == Rule::number)
-                            .and_then(|p| p.as_str().parse().ok());
-                    }
-                    Some(Rule::kw_tls) => {
-                        tls = parts
-                            .find(|p| p.as_rule() == Rule::bool_lit)
-                            .map(|p| parse_bool(p.as_str()))
-                            .unwrap_or(false);
-                    }
-                    Some(Rule::kw_session) => {
-                        session = parts
-                            .find(|p| p.as_rule() == Rule::bool_lit)
-                            .map(|p| parse_bool(p.as_str()))
-                            .unwrap_or(false);
-                    }
-                    Some(Rule::kw_read_max) => {
-                        read_max = parts
-                            .find(|p| p.as_rule() == Rule::number)
-                            .and_then(|p| p.as_str().parse().ok())
-                            .unwrap_or(read_max);
-                    }
-                    Some(Rule::kw_read_idle) => {
-                        let duration = parts
-                            .find(|p| p.as_rule() == Rule::duration)
-                            .map(|p| p.as_str())
-                            .unwrap_or("0s");
-                        read_idle_ms = parse_duration(duration)
-                            .map_err(|err| ParseError::Invalid(err.to_string()))?
-                            .as_millis() as u32;
-                    }
-                    _ => {}
-                }
+            "port" => {
+                port = parts
+                    .find(|p| p.as_rule() == Rule::number)
+                    .and_then(|p| p.as_str().parse().ok());
             }
+            "tls" => {
+                tls = parts
+                    .find(|p| p.as_rule() == Rule::bool_lit)
+                    .map(|p| parse_bool(p.as_str()))
+                    .unwrap_or(false);
+            }
+            "session" => {
+                session = parts
+                    .find(|p| p.as_rule() == Rule::bool_lit)
+                    .map(|p| parse_bool(p.as_str()))
+                    .unwrap_or(false);
+            }
+            "read_max" => {
+                read_max = parts
+                    .find(|p| p.as_rule() == Rule::number)
+                    .and_then(|p| p.as_str().parse().ok())
+                    .unwrap_or(read_max);
+            }
+            "read_idle" => {
+                let duration = parts
+                    .find(|p| p.as_rule() == Rule::duration)
+                    .map(|p| p.as_str())
+                    .unwrap_or("0s");
+                read_idle_ms = parse_duration(duration)
+                    .map_err(|err| ParseError::Invalid(err.to_string()))?
+                    .as_millis() as u32;
+            }
+            _ => {}
         }
     }
 
@@ -88,12 +88,34 @@ pub(crate) fn build_socket_block(pair: Pair<Rule>) -> Result<SocketProbe, ParseE
     })
 }
 
+fn socket_item_keyword(item: &Pair<Rule>) -> String {
+    item.as_str()
+        .trim()
+        .split_whitespace()
+        .next()
+        .unwrap_or("")
+        .to_ascii_lowercase()
+}
+
 pub(crate) fn parse_payload_value(pair: Option<Pair<Rule>>) -> Result<Vec<u8>, ParseError> {
     let value = pair.ok_or(ParseError::UnexpectedRule(Rule::payload_item))?;
     Ok(match value.as_rule() {
-        Rule::string => unquote_string(value).into_bytes(),
+        Rule::string => decode_payload_string(&unquote_string(value)),
         Rule::hex_lit => hex_to_bytes(&unquote_string(value))
             .map_err(|err| ParseError::Invalid(format!("invalid payload hex: {err}")))?,
         rule => return Err(ParseError::UnexpectedRule(rule)),
     })
+}
+
+fn decode_payload_string(text: &str) -> Vec<u8> {
+    let compact: String = text.chars().filter(|c| !c.is_ascii_whitespace()).collect();
+    if !compact.is_empty()
+        && compact.len().is_multiple_of(2)
+        && compact.chars().all(|c| c.is_ascii_hexdigit())
+        && let Ok(bytes) = hex_to_bytes(&compact)
+    {
+        bytes
+    } else {
+        text.as_bytes().to_vec()
+    }
 }

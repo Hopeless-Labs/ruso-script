@@ -173,12 +173,3 @@ pub(crate) fn build_retry(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
         rule => Err(ParseError::UnexpectedRule(rule)),
     }
 }
-
-pub(crate) fn build_sleep(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
-    let value = pair
-        .into_inner()
-        .find(|p| p.as_rule() == Rule::duration)
-        .map(|p| p.as_str().to_string())
-        .unwrap_or_default();
-    Ok(Stmt::Sleep(value))
-}
