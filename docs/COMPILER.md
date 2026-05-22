@@ -8,7 +8,7 @@ The compiler turns `.ruso` source into a `BytecodeProgram` consumed by `ruso-run
 use ruso_script::{parse, compile};
 
 let program = parse(source)?;
-let bytecode = compile(&program);
+let bytecode = compile(&program)?;
 ```
 
 | Function | Output |

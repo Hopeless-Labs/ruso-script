@@ -9,7 +9,7 @@ references "https://redis.io/docs/management/security/"
 mitigation "Require AUTH on Redis and close idle sessions from untrusted networks"
 
 tcp dialog {
-    host "127.0.0.1"
+    host "{{scan_host}}"
     port 6379
     session true
     read_idle 200ms

@@ -119,21 +119,34 @@ fn build_extract_source(pair: Pair<Rule>, regex: Option<String>) -> Result<Extra
 pub(crate) fn build_evidence(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
     let mut inner = pair.into_inner();
     inner.next();
-    let next = inner.next().ok_or(ParseError::UnexpectedRule(Rule::evidence_stmt))?;
-    Ok(match next.as_rule() {
-        Rule::target_ref => {
-            let target = next.as_str().to_string();
-            inner.next();
-            Stmt::Evidence(EvidenceKind::BodyRef(target))
+    let target = inner
+        .next()
+        .filter(|p| p.as_rule() == Rule::target_ref)
+        .ok_or(ParseError::UnexpectedRule(Rule::evidence_stmt))?;
+    let probe = target.as_str().to_string();
+    let tail = inner
+        .next()
+        .ok_or(ParseError::UnexpectedRule(Rule::evidence_stmt))?;
+    match tail.as_rule() {
+        Rule::dot => {
+            let field = inner
+                .next()
+                .ok_or(ParseError::UnexpectedRule(Rule::evidence_stmt))?;
+            Ok(match field.as_rule() {
+                Rule::kw_body => Stmt::Evidence(EvidenceKind::BodyRef(probe)),
+                Rule::kw_response => Stmt::Evidence(EvidenceKind::ResponseRef(probe)),
+                rule => return Err(ParseError::UnexpectedRule(rule)),
+            })
         }
-        Rule::kw_regex => Stmt::Evidence(EvidenceKind::Regex(
-            inner
+        Rule::kw_regex => Ok(Stmt::Evidence(EvidenceKind::Regex {
+            target: probe,
+            pattern: inner
                 .next()
                 .map(unquote_regex)
                 .unwrap_or_default(),
-        )),
-        rule => return Err(ParseError::UnexpectedRule(rule)),
-    })
+        })),
+        rule => Err(ParseError::UnexpectedRule(rule)),
+    }
 }
 
 pub(crate) fn build_flow(pair: Pair<Rule>) -> Result<Stmt, ParseError> {

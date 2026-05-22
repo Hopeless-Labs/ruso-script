@@ -86,11 +86,11 @@ Requires a reachable HTTPS target; adjust matchers to match the real response.
 
 - Text `payload` with RESP encoding  
 - `match redis_ping.response contains "PONG"`  
-- `evidence regex 'PONG'`
+- `evidence redis_ping regex 'PONG'`
 
 **Metadata:** full advisory block — `cve`, `cwe`, `cvss`, `cvss_score`, `references`, `mitigation` (repeatable lines).
 
-**Run:** Set `host` in script to your lab Redis (default `127.0.0.1:6379`).
+**Run:** Uses `host "{{scan_host}}"` from `--target`. Example: `ruso scan --script examples/tcp_redis_unauth.ruso --target http://127.0.0.1:6379` (port 6379 is still from the probe block).
 
 ---
 

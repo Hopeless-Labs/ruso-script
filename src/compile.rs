@@ -9,10 +9,44 @@ use crate::script::ast::Stmt;
 use crate::script::Program;
 use crate::spec_build::build_program_spec;
 
-pub fn compile(program: &Program) -> BytecodeProgram {
-    let mut compiler = Compiler::new(build_program_spec(&program.statements));
+#[derive(Debug, thiserror::Error)]
+pub enum CompileError {
+    #[error("script has match/evidence logic but no `name` or `report` metadata for the finding title")]
+    MissingFindingTitle,
+}
+
+pub fn compile(program: &Program) -> Result<BytecodeProgram, CompileError> {
+    let spec = build_program_spec(&program.statements);
+    validate_finding_metadata(&spec.metadata, &program.statements)?;
+    let mut compiler = Compiler::new(spec);
     compiler.emit_program(&program.statements);
-    compiler.finish()
+    Ok(compiler.finish())
+}
+
+fn validate_finding_metadata(
+    metadata: &ruso_runtime::CheckMetadata,
+    statements: &[Stmt],
+) -> Result<(), CompileError> {
+    if !statements.iter().any(needs_finding_title) {
+        return Ok(());
+    }
+    if metadata.name.is_some() || metadata.report_title.is_some() {
+        return Ok(());
+    }
+    Err(CompileError::MissingFindingTitle)
+}
+
+fn needs_finding_title(stmt: &Stmt) -> bool {
+    match stmt {
+        Stmt::Match(_)
+        | Stmt::MatchAll(_)
+        | Stmt::MatchAny(_)
+        | Stmt::Assert(_)
+        | Stmt::Evidence(_) => true,
+        Stmt::If { body, .. } => body.iter().any(needs_finding_title),
+        Stmt::Repeat { body, .. } => body.iter().any(needs_finding_title),
+        _ => false,
+    }
 }
 
 struct Compiler {
@@ -264,9 +298,35 @@ mod tests {
                 }),
             ],
         };
-        let bytecode = compile(&program);
+        let bytecode = compile(&program).unwrap();
         assert_eq!(bytecode.code.len(), 2);
         assert!(matches!(bytecode.code[0], Instr::Send { .. }));
         assert!(matches!(bytecode.code[1], Instr::Match(_)));
+    }
+
+    #[test]
+    fn compile_rejects_match_without_finding_title() {
+        let program = Program {
+            statements: vec![
+                Stmt::Send {
+                    probe: "home".into(),
+                    payload: None,
+                },
+                Stmt::Match(QualifiedMatch {
+                    field: QualifiedField {
+                        target: "home".into(),
+                        kind: FieldKind::Status,
+                    },
+                    predicate: MatchPredicate::Compare {
+                        op: CmpOp::Eq,
+                        value: CmpValue::Number(200),
+                    },
+                }),
+            ],
+        };
+        assert!(matches!(
+            compile(&program),
+            Err(CompileError::MissingFindingTitle)
+        ));
     }
 }

@@ -29,7 +29,7 @@ tcp svc { … }
 send home
 match home.status == 200
 
-evidence regex 'secret'
+evidence home regex 'secret'
 ```
 
 Comments start with `#`.
@@ -60,6 +60,18 @@ set token "abc123"
 ```
 
 Values support `"{{ variable }}"` interpolation in strings where the grammar allows `interpolation`.
+
+### Scan target variables (from CLI `--target`)
+
+Before your script runs, the executor sets (when `--target` is a valid URL):
+
+| Variable | Example value |
+|----------|----------------|
+| `scan_host` | `example.com` |
+| `scan_port` | `443` |
+| `scan_url` | `https://example.com` |
+
+Use in socket probes: `host "{{scan_host}}"`. **HTTP** probes still use `base_url` from `--target`; they do not read `host` from the probe block.
 
 ## HTTP probe
 
@@ -104,10 +116,12 @@ tcp | udp | dns <name> {
 
 ### DNS modes
 
-| Configuration | Behavior |
-|---------------|----------|
-| `host` only | OS DNS resolver → match `.answer` |
-| `host` + `port` / `payload` | UDP wire format → match `.response` (default port 53) |
+| Configuration | Behavior | Match on |
+|---------------|----------|----------|
+| `host` only | OS DNS resolver | `.answer` |
+| `host` + `port` and/or `payload` | UDP wire format (default port 53) | `.response` / `.banner` |
+
+Do not use `.answer` on wire-mode probes or `.response` on resolver-only probes.
 
 ### Payload encoding
 
@@ -123,7 +137,8 @@ send <probe_name> payload "deadbeef"
 ```
 
 - First `send` on a `session true` probe opens the connection.
-- Later `send` reuses the socket; response data is **appended** to the stored socket response.
+- Later `send` reuses the socket; with `session true`, response data is **appended** to the stored socket response (matchers see the full dialog).
+- Without `session`, each `send` **replaces** the stored response for that probe name.
 - `payload` on `send` overrides the probe definition for that step only.
 
 ## Matching
@@ -181,7 +196,15 @@ end
 | Not contains | `not_contains "text"` |
 | Regex | `regex 'pattern'` (Rust regex syntax) |
 
-If any `match` / `match all` fails, the match chain latches false (later matchers short-circuit unless you structure logic with `if`).
+If any `match` / `match all` fails, the match chain latches false (later `match` / `match all` / `assert` / `evidence` short-circuit until `if` runs its own branch).
+
+### `match` vs `assert`
+
+| | `match` | `assert` |
+|---|--------|----------|
+| On failure | Sets match chain to false; run continues | **Aborts the run** with an error |
+| When chain already false | Skipped (no-op) | Skipped (no-op) |
+| Use for | Positive finding logic | Hard precondition (“must be 200 before we continue”) |
 
 ## Conditionals
 
@@ -215,14 +238,28 @@ extract token from home.header("Set-Cookie") regex 'session=([^;]+)'
 save home as cached
 ```
 
+`extract` is HTTP-only (body or header). `save` copies an existing probe response to another name — it does **not** send again; `match cached.body` is a snapshot from when `save` ran.
+
 ## Evidence
+
+Attach proof strings to the finding (only when the match chain is still true). Requires `name` or `report` metadata if the script uses `match` / `evidence` (compile-time check).
 
 ```ruso
 evidence home.body
-evidence regex 'PASSWORD='
+evidence home.response
+evidence home regex 'PASSWORD='
+evidence redis_ping regex 'PONG'
 ```
 
-Collected when match chain is still true; attached to the finding on completion.
+| Form | Meaning |
+|------|---------|
+| `evidence <probe>.body` | **HTTP only** — response body (max 500 chars) |
+| `evidence <probe>.response` | Full response text: HTTP body, joined DNS answers, or socket data (max 500 chars) |
+| `evidence <probe> regex '…'` | Regex on **that probe only**; capture group 1 or full match |
+
+`<probe>` must already have been `send` in this run. Regex uses Rust syntax; mismatch fails the run.
+
+Evidence is attached when the script finishes with a finding (`name` or `report` set, match chain true, and not stopped — see flow control).
 
 ## Retry and sleep
 
@@ -236,14 +273,25 @@ sleep 1s
 
 | Statement | Effect |
 |-----------|--------|
-| `stop` | Stop VM, success path |
-| `exit` | Stop VM |
+| `stop` | Stop script; **no finding** emitted (even if matchers passed) |
+| `exit` | Stop script; emit finding if matchers passed and `name`/`report` set |
 | `fail` | Abort with error |
-| `continue` | Next instruction |
+| `continue` | Reserved — no effect today (do not rely on it) |
+
+Scripts with `match` / `evidence` must include `name "…"` or `report "…"` or compilation fails.
 
 ## Duration literals
 
 Suffix `ms` or `s`: `200ms`, `30s`, `1s`. Used in `timeout`, `read_idle`, `sleep`, `retry_delay`, and comparisons.
+
+## Common footguns
+
+1. **`--target` vs socket `host`** — HTTP uses `--target` as base URL; TCP/UDP/DNS wire use `host` in the script (prefer `host "{{scan_host}}"`).
+2. **DNS resolver vs wire** — different match fields (`.answer` vs `.response`).
+3. **`evidence home.body` on a TCP probe** — use `.response` or `evidence home regex`.
+4. **`detected` in CLI** — requires a finding (`name`/`report` + matchers passed + not `stop`).
+5. **Port cache (30s)** — `skipped` is per script run when a required port was already seen closed in this `ruso` process.
+6. **`session true`** — socket responses accumulate across `send` in a loop.
 
 ## Grammar source
 

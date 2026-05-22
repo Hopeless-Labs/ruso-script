@@ -311,7 +311,8 @@ save_stmt = { kw_save ~ ident ~ kw_as ~ ident }
 
 evidence_stmt = {
     kw_evidence ~ target_ref ~ dot ~ kw_body
-    | kw_evidence ~ kw_regex ~ regex_lit
+    | kw_evidence ~ target_ref ~ dot ~ kw_response
+    | kw_evidence ~ target_ref ~ kw_regex ~ regex_lit
 }
 
 flow_stmt = { kw_stop | kw_fail | kw_continue | kw_break | kw_exit }

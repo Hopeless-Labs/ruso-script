@@ -733,8 +733,19 @@ fn parse_evidence_body() {
 #[test]
 fn parse_evidence_regex() {
     assert_eq!(
-        parse_one("evidence regex 'APP_DEBUG=true'"),
-        Stmt::Evidence(EvidenceKind::Regex("APP_DEBUG=true".into()))
+        parse_one("evidence login regex 'APP_DEBUG=true'"),
+        Stmt::Evidence(EvidenceKind::Regex {
+            target: "login".into(),
+            pattern: "APP_DEBUG=true".into(),
+        })
+    );
+}
+
+#[test]
+fn parse_evidence_response() {
+    assert_eq!(
+        parse_one("evidence redis_ping.response"),
+        Stmt::Evidence(EvidenceKind::ResponseRef("redis_ping".into()))
     );
 }
 

@@ -10,7 +10,7 @@ mod compile;
 mod spec_build;
 pub mod script;
 
-pub use compile::compile;
+pub use compile::{compile, CompileError};
 pub use ruso_runtime::{
     encode_bytecode, BytecodeProgram, EvidenceKind, ExtractSource, QualifiedMatch, Severity,
 };
@@ -44,19 +44,20 @@ pub fn load_program(path: &Path) -> Result<Program, LoadError> {
     })
 }
 
-pub fn compile_program(program: &Program) -> BytecodeProgram {
+pub fn compile_program(program: &Program) -> Result<BytecodeProgram, CompileError> {
     compile(program)
 }
 
-pub fn compile_to_bytes(program: &Program) -> Vec<u8> {
-    encode_bytecode(&compile_program(program))
+pub fn compile_to_bytes(program: &Program) -> Result<Vec<u8>, CompileError> {
+    Ok(encode_bytecode(&compile_program(program)?))
 }
 
 pub async fn run(
     program: &Program,
     config: ruso_runtime::ExecutorConfig,
 ) -> Result<ruso_runtime::ExecutionResult, ruso_runtime::RuntimeError> {
-    let bytecode = compile_program(program);
+    let bytecode = compile_program(program)
+        .map_err(|e| ruso_runtime::RuntimeError::Other(e.to_string()))?;
     ruso_runtime::Executor::from_bytecode(config, bytecode)?.run().await
 }
 
@@ -94,7 +95,7 @@ mod tests {
     fn bytecode_roundtrip_http_example() {
         let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("examples/http_health.ruso");
         let program = load_program(&path).unwrap();
-        let original = compile_program(&program);
+        let original = compile_program(&program).unwrap();
         let bytes = encode_bytecode(&original);
         let restored = decode_bytecode(&bytes).unwrap();
         assert_eq!(original.code, restored.code);
@@ -107,7 +108,7 @@ mod tests {
         let program = Program {
             statements: vec![Stmt::Name("Hex test".into()), Stmt::Severity(Severity::Low)],
         };
-        let bytes = compile_to_bytes(&program);
+        let bytes = compile_to_bytes(&program).unwrap();
         let hex = bytes_to_hex(&bytes);
         let restored = hex_to_bytes(&hex).expect("hex decode");
         let decoded = decode_bytecode(&restored).expect("bytecode decode");
