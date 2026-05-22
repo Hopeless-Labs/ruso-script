@@ -47,4 +47,4 @@ ruso parse --script examples/http_health.ruso
 
 ## License
 
-MIT OR Apache-2.0
+Apache License 2.0. See [LICENSE](LICENSE).
