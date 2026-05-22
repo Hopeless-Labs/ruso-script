@@ -21,6 +21,9 @@ pub(crate) fn build_metadata(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
         )),
         Rule::kw_author => Stmt::Author(value.map(unquote_string).unwrap_or_default()),
         Rule::kw_report => Stmt::Report(value.map(unquote_string).unwrap_or_default()),
+        Rule::kw_cve => Stmt::Cve(value.map(unquote_string).unwrap_or_default()),
+        Rule::kw_cwe => Stmt::Cwe(value.map(unquote_string).unwrap_or_default()),
+        Rule::kw_references => Stmt::Reference(value.map(unquote_string).unwrap_or_default()),
         rule => return Err(ParseError::UnexpectedRule(rule)),
     })
 }

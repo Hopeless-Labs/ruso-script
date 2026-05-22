@@ -79,6 +79,27 @@ fn parse_report() {
     );
 }
 
+#[test]
+fn parse_cve() {
+    assert_eq!(
+        parse_one("cve \"CVE-2024-1234\""),
+        Stmt::Cve("CVE-2024-1234".into())
+    );
+}
+
+#[test]
+fn parse_cwe() {
+    assert_eq!(parse_one("cwe \"CWE-79\""), Stmt::Cwe("CWE-79".into()));
+}
+
+#[test]
+fn parse_references() {
+    assert_eq!(
+        parse_one("references \"https://example.com/advisory\""),
+        Stmt::Reference("https://example.com/advisory".into())
+    );
+}
+
 // --- Variables ---
 
 #[test]

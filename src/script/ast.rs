@@ -30,6 +30,9 @@ pub enum Stmt {
     Severity(Severity),
     Author(String),
     Report(String),
+    Cve(String),
+    Cwe(String),
+    Reference(String),
 
     Set {
         name: String,
@@ -98,6 +101,9 @@ impl Stmt {
                 | Self::Severity(_)
                 | Self::Author(_)
                 | Self::Report(_)
+                | Self::Cve(_)
+                | Self::Cwe(_)
+                | Self::Reference(_)
         )
     }
 

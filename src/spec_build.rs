@@ -16,6 +16,9 @@ pub fn build_program_spec(statements: &[Stmt]) -> ProgramSpec {
             Stmt::Severity(value) => spec.metadata.severity = Some(value.clone()),
             Stmt::Author(value) => spec.metadata.author = Some(value.clone()),
             Stmt::Report(value) => spec.metadata.report_title = Some(value.clone()),
+            Stmt::Cve(value) => spec.metadata.cve.push(value.clone()),
+            Stmt::Cwe(value) => spec.metadata.cwe.push(value.clone()),
+            Stmt::Reference(value) => spec.metadata.references.push(value.clone()),
             Stmt::Http { name, items } => {
                 spec.probes
                     .insert(name.clone(), ProbeKind::Http(http_spec(items)));
@@ -100,5 +103,24 @@ mod tests {
         assert_eq!(spec.metadata.severity, Some(Severity::High));
         let probe = spec.probes.get("home").expect("home probe");
         assert!(matches!(probe, ProbeKind::Http(_)));
+    }
+
+    #[test]
+    fn collects_cve_cwe_references() {
+        let statements = vec![
+            Stmt::Name("Refs".into()),
+            Stmt::Cve("CVE-2024-1".into()),
+            Stmt::Cve("CVE-2024-2".into()),
+            Stmt::Cwe("CWE-79".into()),
+            Stmt::Reference("https://a.example".into()),
+            Stmt::Reference("https://b.example".into()),
+        ];
+        let spec = build_program_spec(&statements);
+        assert_eq!(spec.metadata.cve, vec!["CVE-2024-1", "CVE-2024-2"]);
+        assert_eq!(spec.metadata.cwe, vec!["CWE-79"]);
+        assert_eq!(
+            spec.metadata.references,
+            vec!["https://a.example", "https://b.example"]
+        );
     }
 }

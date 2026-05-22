@@ -39,6 +39,9 @@ kw_description = @{ D ~ E ~ S ~ C_ ~ R ~ I ~ P ~ T ~ I ~ O ~ N }
 kw_impact = @{ I ~ M ~ P ~ A ~ C_ ~ T }
 kw_severity = @{ S ~ E ~ V ~ E ~ R ~ I ~ T ~ Y }
 kw_author = @{ A ~ U ~ T ~ H ~ O ~ R }
+kw_cve = @{ C_ ~ V ~ E }
+kw_cwe = @{ C_ ~ W ~ E }
+kw_references = @{ R ~ E ~ F ~ E ~ R ~ E ~ N ~ C_ ~ E ~ S }
 kw_evidence = @{ E ~ V ~ I ~ D ~ E ~ N ~ C_ ~ E }
 kw_report = @{ R ~ E ~ P ~ O ~ R ~ T }
 
@@ -268,6 +271,9 @@ metadata_stmt = {
     | kw_severity ~ severity_lit
     | kw_author ~ string
     | kw_report ~ string
+    | kw_cve ~ string
+    | kw_cwe ~ string
+    | kw_references ~ string
 }
 
 set_stmt = { kw_set ~ ident ~ (string | interpolation) }

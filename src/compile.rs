@@ -214,6 +214,9 @@ impl Compiler {
             | Stmt::Severity(_)
             | Stmt::Author(_)
             | Stmt::Report(_)
+            | Stmt::Cve(_)
+            | Stmt::Cwe(_)
+            | Stmt::Reference(_)
             | Stmt::Http { .. }
             | Stmt::Dns(_)
             | Stmt::Tcp(_)

@@ -38,6 +38,9 @@ Comments start with `#`.
 | `severity` | `severity low \| medium \| high \| critical \| info` |
 | `author` | `author "ruso-lab"` |
 | `report` | `report "Report title override"` |
+| `cve` | `cve "CVE-2024-1234"` (repeat to list multiple) |
+| `cwe` | `cwe "CWE-79"` (repeat to list multiple) |
+| `references` | `references "https://…"` (repeat to list multiple) |
 
 ## Variables
 
