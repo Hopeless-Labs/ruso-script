@@ -125,7 +125,7 @@ Requires a reachable HTTPS target; adjust matchers to match the real response.
 ## Writing your own
 
 1. Copy the closest example.  
-2. Change metadata for your finding.  
+2. Change metadata for your finding (`name`, `severity`, `cve`, `cwe`, `references`, …).  
 3. Adjust `host`/`port`/`payload` or HTTP `path`.  
 4. Tighten matchers to reduce false positives.  
 5. Add `evidence` for report body.

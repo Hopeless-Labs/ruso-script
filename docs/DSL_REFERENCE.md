@@ -14,6 +14,9 @@ description "What this check does"
 impact "Risk if positive"
 severity high
 author "team"
+cve "CVE-2024-1234"
+cwe "CWE-79"
+references "https://example.com/advisory"
 
 # Probes (definitions only — no network yet)
 http home { … }
@@ -41,6 +44,8 @@ Comments start with `#`.
 | `cve` | `cve "CVE-2024-1234"` (repeat to list multiple) |
 | `cwe` | `cwe "CWE-79"` (repeat to list multiple) |
 | `references` | `references "https://…"` (repeat to list multiple) |
+
+Repeat `cve`, `cwe`, or `references` on separate lines to build a list. They are stored on `CheckMetadata` and copied into findings and scan reports unchanged.
 
 ## Variables
 
