@@ -9,17 +9,19 @@ Keywords are **case-insensitive** (`HTTP`, `http`, `Send` are equivalent).
 Typical check layout:
 
 ```ruso
-name "Check title"
-description "What this check does"
-impact "Risk if positive"
-severity high
-author "team"
-cve "CVE-2024-1234"
-cwe "CWE-79"
-references "https://example.com/advisory"
-cvss_score 9.8
-cvss "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
-mitigation "Apply security patch"
+metadata {
+    name "Check title"
+    description "What this check does"
+    impact "Risk if positive"
+    severity high
+    author "team"
+    cve "CVE-2024-1234"
+    cwe "CWE-79"
+    references "https://example.com/advisory"
+    cvss_score 9.8
+    cvss "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+    mitigation "Apply security patch"
+}
 
 # Probes (definitions only — no network yet)
 http home { … }
@@ -36,7 +38,9 @@ Comments start with `#`.
 
 ## Metadata
 
-| Statement | Example |
+All finding metadata lives in a single `metadata { … }` block at the top of the script (before probe definitions). Lines inside the block use the same keywords as before; you may repeat list fields (`cve`, `cwe`, `references`, `cvss`, `cvss_score`, `mitigation`) on separate lines.
+
+| Statement | Example (inside `metadata { }`) |
 |-----------|---------|
 | `name` | `name "Open Redis"` |
 | `description` | `description "…"` |
@@ -51,7 +55,7 @@ Comments start with `#`.
 | `cvss_score` | `cvss_score 9.8` numeric score literal (repeat to list multiple) |
 | `mitigation` | `mitigation "…"` remediation text (repeat to list multiple) |
 
-Repeat metadata lines on separate lines to build a list. Use `cvss` for vectors and `cvss_score` for scores (e.g. base + temporal). Values are stored on `CheckMetadata` and copied into findings and scan reports unchanged.
+Repeat list fields on separate lines inside the block. Use `cvss` for vectors and `cvss_score` for scores (e.g. base + temporal). Values are stored on `CheckMetadata` and copied into findings and scan reports unchanged.
 
 ## Variables
 

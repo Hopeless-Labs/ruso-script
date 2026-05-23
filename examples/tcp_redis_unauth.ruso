@@ -1,16 +1,18 @@
-name "Redis exposed without authentication"
-description "Send Redis RESP PING on TCP/6379; unauthenticated instances reply with PONG"
-impact "Unauthenticated Redis allows data read/write, RCE via module abuse, and lateral movement"
-severity critical
-author "ruso-lab"
-cve "CVE-2015-4335"
-cwe "CWE-306"
-cvss_score 9.8
-cvss "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
-references "https://redis.io/docs/management/security/"
-references "https://nvd.nist.gov/vuln/detail/CVE-2015-4335"
-mitigation "Require AUTH and bind Redis to localhost or a private interface"
-mitigation "Enable protected-mode and block port 6379 at the firewall"
+metadata {
+    name "Redis exposed without authentication"
+    description "Send Redis RESP PING on TCP/6379; unauthenticated instances reply with PONG"
+    impact "Unauthenticated Redis allows data read/write, RCE via module abuse, and lateral movement"
+    severity critical
+    author "ruso-lab"
+    cve "CVE-2015-4335"
+    cwe "CWE-306"
+    cvss_score 9.8
+    cvss "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+    references "https://redis.io/docs/management/security/"
+    references "https://nvd.nist.gov/vuln/detail/CVE-2015-4335"
+    mitigation "Require AUTH and bind Redis to localhost or a private interface"
+    mitigation "Enable protected-mode and block port 6379 at the firewall"
+}
 
 # Host comes from CLI --target via {{scan_host}} (see DSL "Scan target variables").
 tcp redis_ping {

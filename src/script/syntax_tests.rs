@@ -12,6 +12,10 @@ fn parse_one(source: &str) -> Stmt {
     program.statements.into_iter().next().unwrap()
 }
 
+fn parse_metadata_one(source: &str) -> Stmt {
+    parse_one(&format!("metadata {{\n{source}\n}}"))
+}
+
 fn field(target: &str, kind: FieldKind) -> QualifiedField {
     QualifiedField {
         target: target.into(),
@@ -38,7 +42,7 @@ fn contains(target: &str, kind: FieldKind, text: &str) -> QualifiedMatch {
 #[test]
 fn parse_name() {
     assert_eq!(
-        parse_one("name \"Laravel Debug\""),
+        parse_metadata_one("name \"Laravel Debug\""),
         Stmt::Name("Laravel Debug".into())
     );
 }
@@ -46,7 +50,7 @@ fn parse_name() {
 #[test]
 fn parse_description() {
     assert_eq!(
-        parse_one("description \"Detect exposed debug page\""),
+        parse_metadata_one("description \"Detect exposed debug page\""),
         Stmt::Description("Detect exposed debug page".into())
     );
 }
@@ -54,27 +58,27 @@ fn parse_description() {
 #[test]
 fn parse_impact() {
     assert_eq!(
-        parse_one("impact \"Remote code execution\""),
+        parse_metadata_one("impact \"Remote code execution\""),
         Stmt::Impact("Remote code execution".into())
     );
 }
 
 #[test]
 fn parse_severity() {
-    assert_eq!(parse_one("severity high"), Stmt::Severity(Severity::High));
-    assert_eq!(parse_one("severity critical"), Stmt::Severity(Severity::Critical));
-    assert_eq!(parse_one("severity low"), Stmt::Severity(Severity::Low));
+    assert_eq!(parse_metadata_one("severity high"), Stmt::Severity(Severity::High));
+    assert_eq!(parse_metadata_one("severity critical"), Stmt::Severity(Severity::Critical));
+    assert_eq!(parse_metadata_one("severity low"), Stmt::Severity(Severity::Low));
 }
 
 #[test]
 fn parse_author() {
-    assert_eq!(parse_one("author \"jaeger\""), Stmt::Author("jaeger".into()));
+    assert_eq!(parse_metadata_one("author \"jaeger\""), Stmt::Author("jaeger".into()));
 }
 
 #[test]
 fn parse_report() {
     assert_eq!(
-        parse_one("report \"Laravel Debug Enabled\""),
+        parse_metadata_one("report \"Laravel Debug Enabled\""),
         Stmt::Report("Laravel Debug Enabled".into())
     );
 }
@@ -82,20 +86,20 @@ fn parse_report() {
 #[test]
 fn parse_cve() {
     assert_eq!(
-        parse_one("cve \"CVE-2024-1234\""),
+        parse_metadata_one("cve \"CVE-2024-1234\""),
         Stmt::Cve("CVE-2024-1234".into())
     );
 }
 
 #[test]
 fn parse_cwe() {
-    assert_eq!(parse_one("cwe \"CWE-79\""), Stmt::Cwe("CWE-79".into()));
+    assert_eq!(parse_metadata_one("cwe \"CWE-79\""), Stmt::Cwe("CWE-79".into()));
 }
 
 #[test]
 fn parse_references() {
     assert_eq!(
-        parse_one("references \"https://example.com/advisory\""),
+        parse_metadata_one("references \"https://example.com/advisory\""),
         Stmt::Reference("https://example.com/advisory".into())
     );
 }
@@ -103,24 +107,43 @@ fn parse_references() {
 #[test]
 fn parse_cvss() {
     assert_eq!(
-        parse_one("cvss \"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H\""),
+        parse_metadata_one("cvss \"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H\""),
         Stmt::Cvss("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H".into())
     );
 }
 
 #[test]
 fn parse_cvss_score() {
-    assert_eq!(parse_one("cvss_score 9.8"), Stmt::CvssScore("9.8".into()));
-    assert_eq!(parse_one("cvss_score 7.5"), Stmt::CvssScore("7.5".into()));
-    assert_eq!(parse_one("cvss_score 10"), Stmt::CvssScore("10".into()));
+    assert_eq!(parse_metadata_one("cvss_score 9.8"), Stmt::CvssScore("9.8".into()));
+    assert_eq!(parse_metadata_one("cvss_score 7.5"), Stmt::CvssScore("7.5".into()));
+    assert_eq!(parse_metadata_one("cvss_score 10"), Stmt::CvssScore("10".into()));
 }
 
 #[test]
 fn parse_mitigation() {
     assert_eq!(
-        parse_one("mitigation \"Apply security patch\""),
+        parse_metadata_one("mitigation \"Apply security patch\""),
         Stmt::Mitigation("Apply security patch".into())
     );
+}
+
+#[test]
+fn parse_metadata_block() {
+    let program = parse(
+        "metadata {\n\
+         name \"Open Redis\"\n\
+         severity critical\n\
+         cvss_score 9.8\n\
+         }\n",
+    )
+    .unwrap();
+    assert_eq!(program.statements.len(), 3);
+    assert_eq!(program.statements[0], Stmt::Name("Open Redis".into()));
+    assert_eq!(
+        program.statements[1],
+        Stmt::Severity(Severity::Critical)
+    );
+    assert_eq!(program.statements[2], Stmt::CvssScore("9.8".into()));
 }
 
 // --- Variables ---
@@ -803,7 +826,7 @@ fn parse_sleep() {
 #[test]
 fn parse_ignores_comments_and_blank_lines() {
     let program = parse(
-        "# metadata\n\nname \"test\"\n\n# end\n",
+        "# metadata block\n\nmetadata {\nname \"test\"\n}\n\n# end\n",
     )
     .unwrap();
     assert_eq!(program.statements.len(), 1);
@@ -813,7 +836,7 @@ fn parse_ignores_comments_and_blank_lines() {
 #[test]
 fn parse_case_insensitive_keywords() {
     assert_eq!(
-        parse_one("NAME \"x\"\n"),
+        parse_metadata_one("NAME \"x\"\n"),
         Stmt::Name("x".into())
     );
     assert_eq!(

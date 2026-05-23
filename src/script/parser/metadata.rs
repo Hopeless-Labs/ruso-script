@@ -5,6 +5,13 @@ use crate::script::grammar::Rule;
 use crate::script::parser::ParseError;
 use crate::script::parser::helpers::{parse_severity, unquote_string};
 
+pub(crate) fn build_metadata_block(pair: Pair<Rule>) -> Result<Vec<Stmt>, ParseError> {
+    pair.into_inner()
+        .filter(|p| p.as_rule() == Rule::metadata_stmt)
+        .map(build_metadata)
+        .collect()
+}
+
 pub(crate) fn build_metadata(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
     let mut inner = pair.into_inner();
     let keyword = inner

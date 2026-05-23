@@ -46,7 +46,7 @@ pub(crate) fn build_if(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
     let condition = build_qualified_expr(expr)?;
     let mut body = Vec::new();
     for item in inner.filter(|p| p.as_rule() == Rule::statement) {
-        body.push(super::build_statement(item)?);
+        body.extend(super::build_statement(item)?);
     }
     Ok(Stmt::If { condition, body })
 }
@@ -59,7 +59,7 @@ pub(crate) fn build_repeat(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
         .unwrap_or(0);
     let mut body = Vec::new();
     for item in inner.filter(|p| p.as_rule() == Rule::statement) {
-        body.push(super::build_statement(item)?);
+        body.extend(super::build_statement(item)?);
     }
     Ok(Stmt::Repeat { count, body })
 }

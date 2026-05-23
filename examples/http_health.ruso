@@ -1,9 +1,11 @@
-name "HTTP GET health check"
-description "Example HTTP probe: GET a JSON echo endpoint and match status and body"
-impact "Demonstrates http/send/match/evidence for HTTP"
-severity info
-author "ruso-lab"
-references "https://github.com/Hopeless-Labs/ruso-script/tree/main/examples"
+metadata {
+    name "HTTP GET health check"
+    description "Example HTTP probe: GET a JSON echo endpoint and match status and body"
+    impact "Demonstrates http/send/match/evidence for HTTP"
+    severity info
+    author "ruso-lab"
+    references "https://github.com/Hopeless-Labs/ruso-script/tree/main/examples"
+}
 
 http health {
     method GET

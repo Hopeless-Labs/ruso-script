@@ -45,6 +45,7 @@ kw_references = @{ R ~ E ~ F ~ E ~ R ~ E ~ N ~ C_ ~ E ~ S }
 kw_cvss = @{ C_ ~ V ~ S ~ S }
 kw_cvss_score = @{ C_ ~ V ~ S ~ S ~ "_" ~ S ~ C_ ~ O ~ R ~ E }
 kw_mitigation = @{ M ~ I ~ T ~ I ~ G ~ A ~ T ~ I ~ O ~ N }
+kw_metadata = @{ M ~ E ~ T ~ A ~ D ~ A ~ T ~ A }
 kw_evidence = @{ E ~ V ~ I ~ D ~ E ~ N ~ C_ ~ E }
 kw_report = @{ R ~ E ~ P ~ O ~ R ~ T }
 
@@ -283,6 +284,8 @@ metadata_stmt = {
     | kw_mitigation ~ string
 }
 
+metadata_block = { kw_metadata ~ l_brace ~ (pad? ~ metadata_stmt)* ~ pad? ~ r_brace }
+
 set_stmt = { kw_set ~ ident ~ (string | interpolation) }
 
 send_payload = { kw_payload ~ (string | hex_lit) }
@@ -321,7 +324,7 @@ retry_stmt = { kw_retry_delay ~ duration | kw_retry ~ ident ~ number }
 sleep_stmt = { kw_sleep ~ duration }
 
 statement = {
-    metadata_stmt
+    metadata_block
     | set_stmt
     | http_block
     | dns_block

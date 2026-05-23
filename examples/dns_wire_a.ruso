@@ -1,10 +1,12 @@
-name "DNS wire-format A query"
-description "UDP DNS query to a resolver: host + port 53 + binary payload (hex)"
-impact "Wire-mode dns uses the same socket fields as tcp/udp; only host alone triggers OS resolver"
-severity info
-author "ruso-lab"
-cwe "CWE-200"
-references "https://github.com/Hopeless-Labs/ruso-script/tree/main/examples"
+metadata {
+    name "DNS wire-format A query"
+    description "UDP DNS query to a resolver: host + port 53 + binary payload (hex)"
+    impact "Wire-mode dns uses the same socket fields as tcp/udp; only host alone triggers OS resolver"
+    severity info
+    author "ruso-lab"
+    cwe "CWE-200"
+    references "https://github.com/Hopeless-Labs/ruso-script/tree/main/examples"
+}
 
 # A query for example.com (ID aa aa, RD, QTYPE A)
 dns wire_a {
@@ -15,5 +17,4 @@ dns wire_a {
 
 send wire_a
 
-# DNS replies are binary; require a non-empty UDP response.
-match wire_a.response regex '.+'
+match wire_a.answer contains "example.com"

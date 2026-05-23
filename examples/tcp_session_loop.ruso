@@ -1,12 +1,14 @@
-name "TCP session with repeat"
-description "Stateful dialog: session + multiple send in a repeat loop (generic, not protocol-specific)"
-impact "Demonstrates session, read_idle, and repeat for multi-step socket checks"
-severity high
-author "ruso-lab"
-cwe "CWE-306"
-cvss_score 8.1
-references "https://redis.io/docs/management/security/"
-mitigation "Require AUTH on Redis and close idle sessions from untrusted networks"
+metadata {
+    name "TCP session with repeat"
+    description "Stateful dialog: session + multiple send in a repeat loop (generic, not protocol-specific)"
+    impact "Demonstrates session, read_idle, and repeat for multi-step socket checks"
+    severity high
+    author "ruso-lab"
+    cwe "CWE-306"
+    cvss_score 8.1
+    references "https://redis.io/docs/management/security/"
+    mitigation "Require AUTH on Redis and close idle sessions from untrusted networks"
+}
 
 tcp dialog {
     host "{{scan_host}}"
