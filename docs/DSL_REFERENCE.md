@@ -17,7 +17,7 @@ author "team"
 cve "CVE-2024-1234"
 cwe "CWE-79"
 references "https://example.com/advisory"
-cvss_score "9.8"
+cvss_score 9.8
 cvss "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
 mitigation "Apply security patch"
 
@@ -48,7 +48,7 @@ Comments start with `#`.
 | `cwe` | `cwe "CWE-79"` (repeat to list multiple) |
 | `references` | `references "https://…"` (repeat to list multiple) |
 | `cvss` | `cvss "CVSS:3.1/…"` full vector string (repeat to list multiple) |
-| `cvss_score` | `cvss_score "9.8"` numeric score (repeat to list multiple) |
+| `cvss_score` | `cvss_score 9.8` numeric score literal (repeat to list multiple) |
 | `mitigation` | `mitigation "…"` remediation text (repeat to list multiple) |
 
 Repeat metadata lines on separate lines to build a list. Use `cvss` for vectors and `cvss_score` for scores (e.g. base + temporal). Values are stored on `CheckMetadata` and copied into findings and scan reports unchanged.

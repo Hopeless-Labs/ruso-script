@@ -110,8 +110,9 @@ fn parse_cvss() {
 
 #[test]
 fn parse_cvss_score() {
-    assert_eq!(parse_one("cvss_score \"9.8\""), Stmt::CvssScore("9.8".into()));
-    assert_eq!(parse_one("cvss_score \"7.5\""), Stmt::CvssScore("7.5".into()));
+    assert_eq!(parse_one("cvss_score 9.8"), Stmt::CvssScore("9.8".into()));
+    assert_eq!(parse_one("cvss_score 7.5"), Stmt::CvssScore("7.5".into()));
+    assert_eq!(parse_one("cvss_score 10"), Stmt::CvssScore("10".into()));
 }
 
 #[test]

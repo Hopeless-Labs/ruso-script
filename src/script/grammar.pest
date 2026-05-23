@@ -145,6 +145,7 @@ regex_lit = @{
 interpolation = { "{{" ~ BLANK ~ ident ~ BLANK ~ "}}" }
 
 number = @{ ASCII_DIGIT+ }
+score_number = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? }
 duration = @{ ASCII_DIGIT+ ~ ("ms" | "s") }
 
 bool_true = @{ T ~ R ~ U ~ E }
@@ -278,7 +279,7 @@ metadata_stmt = {
     | kw_cwe ~ string
     | kw_references ~ string
     | kw_cvss ~ string
-    | kw_cvss_score ~ string
+    | kw_cvss_score ~ score_number
     | kw_mitigation ~ string
 }
 
