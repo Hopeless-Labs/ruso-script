@@ -513,9 +513,12 @@ fn parse_tcp_block() {
 
 #[test]
 fn parse_dns_wire_payload_hex() {
+    // Hex payloads now require the explicit `bytes` keyword. The previous
+    // implicit form (`payload "aabb0100"`) is ambiguous with text and was
+    // removed when the grammar was tightened.
     assert_eq!(
         parse_one(
-            "dns wire {\n    host \"1.1.1.1\"\n    port 53\n    payload \"aabb0100\"\n}"
+            "dns wire {\n    host \"1.1.1.1\"\n    port 53\n    payload bytes \"aabb0100\"\n}"
         ),
         Stmt::Dns(SocketProbe {
             name: "wire".into(),
@@ -528,6 +531,36 @@ fn parse_dns_wire_payload_hex() {
             read_idle_ms: 0,
         })
     );
+}
+
+#[test]
+fn parse_payload_string_is_literal_text() {
+    // Without `bytes`, the payload is treated literally as UTF-8 bytes.
+    // Pre-refactor, a string of hex digits would have been auto-detected as
+    // bytes (foot-gun) — this test pins down the explicit-only behavior.
+    let stmt = parse_one(
+        "tcp probe {\n    host \"h\"\n    port 1\n    payload \"deadbeef\"\n}",
+    );
+    match stmt {
+        Stmt::Tcp(probe) => {
+            assert_eq!(probe.payload.as_deref(), Some(b"deadbeef" as &[u8]));
+        }
+        other => panic!("expected tcp probe, got {other:?}"),
+    }
+}
+
+#[test]
+fn parse_payload_bytes_decodes_hex() {
+    let stmt = parse_one(
+        "tcp probe {\n    host \"h\"\n    port 1\n    payload bytes \"deadbeef\"\n}",
+    );
+    match stmt {
+        Stmt::Tcp(probe) => {
+            let expected: &[u8] = &[0xde, 0xad, 0xbe, 0xef];
+            assert_eq!(probe.payload.as_deref(), Some(expected));
+        }
+        other => panic!("expected tcp probe, got {other:?}"),
+    }
 }
 
 #[test]

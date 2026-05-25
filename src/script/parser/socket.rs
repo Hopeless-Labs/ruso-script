@@ -97,25 +97,26 @@ fn socket_item_keyword(item: &Pair<Rule>) -> String {
         .to_ascii_lowercase()
 }
 
+/// Decode a `payload` value from the grammar.
+///
+/// The grammar offers two distinct producers:
+///
+/// - `Rule::string`  — a quoted text payload, e.g. `payload "PING\r\n"`.
+///   Treated verbatim as UTF-8 bytes; no extra escape processing beyond what
+///   the lexer already strips (the surrounding quotes).
+/// - `Rule::hex_lit` — a hex literal, e.g. `payload "deadbeef"` (lexer
+///   enforces hex digits + whitespace only). Decoded into raw bytes.
+///
+/// Earlier revisions auto-detected hex by inspecting string contents, which
+/// was ambiguous: a literal text payload like `"ABCD"` would silently parse
+/// as two bytes `0xAB 0xCD`. The grammar now makes the intent explicit at
+/// the syntax level, so this dispatch is strictly by pest rule.
 pub(crate) fn parse_payload_value(pair: Option<Pair<Rule>>) -> Result<Vec<u8>, ParseError> {
     let value = pair.ok_or(ParseError::UnexpectedRule(Rule::payload_item))?;
     Ok(match value.as_rule() {
-        Rule::string => decode_payload_string(&unquote_string(value)),
+        Rule::string => unquote_string(value).into_bytes(),
         Rule::hex_lit => hex_to_bytes(&unquote_string(value))
             .map_err(|err| ParseError::Invalid(format!("invalid payload hex: {err}")))?,
         rule => return Err(ParseError::UnexpectedRule(rule)),
     })
-}
-
-fn decode_payload_string(text: &str) -> Vec<u8> {
-    let compact: String = text.chars().filter(|c| !c.is_ascii_whitespace()).collect();
-    if !compact.is_empty()
-        && compact.len().is_multiple_of(2)
-        && compact.chars().all(|c| c.is_ascii_hexdigit())
-        && let Ok(bytes) = hex_to_bytes(&compact)
-    {
-        bytes
-    } else {
-        text.as_bytes().to_vec()
-    }
 }

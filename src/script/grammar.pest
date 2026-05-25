@@ -258,7 +258,15 @@ http_block = {
 }
 
 // --- DNS / TCP / UDP (generic socket probes: host, port?, payload?) ---
-payload_item = { kw_payload ~ (string | hex_lit) }
+//
+// Two forms for `payload`:
+//   payload "PING\r\n"           -- literal UTF-8 text bytes
+//   payload bytes "deadbeef"     -- decoded hex bytes
+//
+// Earlier revisions accepted `payload "deadbeef"` as hex via auto-detect,
+// which was ambiguous (a literal text payload that happened to be all hex
+// digits silently became bytes). Hex is now opt-in via the `bytes` keyword.
+payload_item = { kw_payload ~ kw_bytes ~ hex_lit | kw_payload ~ string }
 socket_item = {
     kw_host ~ string
     | kw_port ~ number
@@ -293,7 +301,9 @@ metadata_block = { kw_metadata ~ l_brace ~ (pad? ~ metadata_stmt)* ~ pad? ~ r_br
 
 set_stmt = { kw_set ~ ident ~ (string | interpolation | list_lit) }
 
-send_payload = { kw_payload ~ (string | hex_lit) }
+// Inline payload override on `send` follows the same explicit-bytes rule
+// as `payload_item`.
+send_payload = { kw_payload ~ kw_bytes ~ hex_lit | kw_payload ~ string }
 send_stmt = { kw_send ~ ident ~ (send_payload)? }
 
 match_stmt = { kw_match ~ qualified_expr }
