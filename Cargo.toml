@@ -1,6 +1,6 @@
 [package]
 name = "ruso-script"
-version = "0.1.0"
+version = "0.1.0-dev"
 edition = "2024"
 description = "Ruso DSL parser and compiler to ruso-runtime bytecode"
 license = "Apache-2.0"
@@ -14,3 +14,10 @@ ruso-runtime = { git = "https://github.com/Hopeless-Labs/ruso-runtime.git", bran
 pest = "2.8.1"
 pest_derive = "2.8.1"
 thiserror = "2.0.12"
+
+# Local dev override: if the sibling repo is checked out at ../ruso-runtime,
+# cargo uses the local path instead of fetching from git. External contributors
+# who only clone this repo will see a "patch not used" warning and fall back to
+# the git dependency above — both paths build correctly.
+[patch."https://github.com/Hopeless-Labs/ruso-runtime.git"]
+ruso-runtime = { path = "../ruso-runtime" }
