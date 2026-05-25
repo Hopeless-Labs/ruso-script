@@ -4,8 +4,8 @@ metadata {
     impact "Wire-mode dns uses the same socket fields as tcp/udp; only host alone triggers OS resolver"
     severity info
     author "ruso-lab"
-    cwe "CWE-200"
-    references "https://github.com/Hopeless-Labs/ruso-script/tree/main/examples"
+    cwe ["CWE-200"]
+    references ["https://github.com/Hopeless-Labs/ruso-script/tree/main/examples"]
 }
 
 # A query for example.com (ID aa aa, RD, QTYPE A)
@@ -17,4 +17,4 @@ dns wire_a {
 
 send wire_a
 
-match wire_a.answer contains "example.com"
+match wire_a.response regex '.+'

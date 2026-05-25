@@ -83,6 +83,8 @@ kw_if = @{ I ~ F }
 kw_end = @{ E ~ N ~ D }
 kw_all = @{ A ~ L ~ L }
 kw_any = @{ A ~ N ~ Y }
+kw_for = @{ F ~ O ~ R }
+kw_in = @{ I ~ N }
 
 kw_from = @{ F ~ R ~ O ~ M }
 kw_contains = @{ C_ ~ O ~ N ~ T ~ A ~ I ~ N ~ S }
@@ -130,6 +132,7 @@ kw_break = @{ B ~ R ~ E ~ A ~ K }
 // --- Literals ---
 ident = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
 dot = { "." }
+comma = { "," }
 
 string = @{
     "\"" ~
@@ -144,6 +147,8 @@ regex_lit = @{
 }
 
 interpolation = { "{{" ~ BLANK ~ ident ~ BLANK ~ "}}" }
+list_item = { string | interpolation }
+list_lit = { "[" ~ BLANK ~ (list_item ~ (BLANK ~ comma ~ BLANK ~ list_item)*)? ~ BLANK ~ "]" }
 
 number = @{ ASCII_DIGIT+ }
 score_number = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? }
@@ -276,9 +281,9 @@ metadata_stmt = {
     | kw_severity ~ severity_lit
     | kw_author ~ string
     | kw_report ~ string
-    | kw_cve ~ string
-    | kw_cwe ~ string
-    | kw_references ~ string
+    | kw_cve ~ list_lit
+    | kw_cwe ~ list_lit
+    | kw_references ~ list_lit
     | kw_cvss ~ string
     | kw_cvss_score ~ score_number
     | kw_mitigation ~ string
@@ -286,7 +291,7 @@ metadata_stmt = {
 
 metadata_block = { kw_metadata ~ l_brace ~ (pad? ~ metadata_stmt)* ~ pad? ~ r_brace }
 
-set_stmt = { kw_set ~ ident ~ (string | interpolation) }
+set_stmt = { kw_set ~ ident ~ (string | interpolation | list_lit) }
 
 send_payload = { kw_payload ~ (string | hex_lit) }
 send_stmt = { kw_send ~ ident ~ (send_payload)? }
@@ -310,6 +315,7 @@ extract_stmt = {
 
 if_block = { kw_if ~ qualified_expr ~ (pad ~ !kw_end ~ statement)* ~ pad? ~ kw_end }
 repeat_block = { kw_repeat ~ number ~ (pad ~ !kw_end ~ statement)* ~ pad? ~ kw_end }
+for_block = { kw_for ~ ident ~ kw_in ~ (list_lit | ident) ~ (pad ~ !kw_end ~ statement)* ~ pad? ~ kw_end }
 
 save_stmt = { kw_save ~ ident ~ kw_as ~ ident }
 
@@ -337,6 +343,7 @@ statement = {
     | extract_stmt
     | if_block
     | repeat_block
+    | for_block
     | save_stmt
     | evidence_stmt
     | flow_stmt

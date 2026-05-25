@@ -31,6 +31,30 @@ pub(crate) fn string_or_interpolation(pair: Pair<Rule>) -> String {
     }
 }
 
+pub(crate) fn parse_list_items(pair: Pair<Rule>) -> Vec<String> {
+    let target = if pair.as_rule() == Rule::list_lit {
+        pair
+    } else {
+        match pair.into_inner().find(|inner| inner.as_rule() == Rule::list_lit) {
+            Some(list) => list,
+            None => return Vec::new(),
+        }
+    };
+
+    target
+        .into_inner()
+        .filter(|item| matches!(item.as_rule(), Rule::list_item | Rule::string | Rule::interpolation))
+        .map(|item| match item.as_rule() {
+            Rule::list_item => item
+                .into_inner()
+                .next()
+                .map(string_or_interpolation)
+                .unwrap_or_default(),
+            _ => string_or_interpolation(item),
+        })
+        .collect()
+}
+
 pub(crate) fn parse_severity(value: &str) -> Severity {
     match value.to_ascii_lowercase().as_str() {
         "low" => Severity::Low,

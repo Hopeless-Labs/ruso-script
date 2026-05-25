@@ -1,9 +1,9 @@
 use pest::iterators::Pair;
 
-use crate::script::ast::{EvidenceKind, ExtractSource, Stmt};
+use crate::script::ast::{EvidenceKind, ExtractSource, ListSource, Stmt, Value};
 use crate::script::grammar::Rule;
 use crate::script::parser::ParseError;
-use crate::script::parser::helpers::unquote_regex;
+use crate::script::parser::helpers::{parse_list_items, unquote_regex};
 use crate::script::parser::match_expr::build_qualified_expr;
 use crate::script::parser::socket::parse_payload_value;
 
@@ -12,12 +12,18 @@ use super::helpers::string_or_interpolation;
 pub(crate) fn build_set(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
     let mut inner = pair.into_inner();
     inner.next();
+    let name = inner
+        .next()
+        .map(|p| p.as_str().to_string())
+        .unwrap_or_default();
+    let value = inner.next();
     Ok(Stmt::Set {
-        name: inner
-            .next()
-            .map(|p| p.as_str().to_string())
-            .unwrap_or_default(),
-        value: inner.next().map(string_or_interpolation).unwrap_or_default(),
+        name,
+        value: match value {
+            Some(pair) if pair.as_rule() == Rule::list_lit => Value::List(parse_list_items(pair)),
+            Some(pair) => Value::String(string_or_interpolation(pair)),
+            None => Value::String(String::new()),
+        },
     })
 }
 
@@ -62,6 +68,28 @@ pub(crate) fn build_repeat(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
         body.extend(super::build_statement(item)?);
     }
     Ok(Stmt::Repeat { count, body })
+}
+
+pub(crate) fn build_for(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
+    let mut inner = pair.into_inner();
+    inner.next();
+    let item = inner
+        .next()
+        .filter(|p| p.as_rule() == Rule::ident)
+        .map(|p| p.as_str().to_string())
+        .unwrap_or_default();
+    let list = inner
+        .find(|p| p.as_rule() == Rule::list_lit || p.as_rule() == Rule::ident)
+        .map(|p| match p.as_rule() {
+            Rule::list_lit => ListSource::Literal(parse_list_items(p)),
+            _ => ListSource::Variable(p.as_str().to_string()),
+        })
+        .unwrap_or_else(|| ListSource::Literal(Vec::new()));
+    let mut body = Vec::new();
+    for stmt in inner.filter(|p| p.as_rule() == Rule::statement) {
+        body.extend(super::build_statement(stmt)?);
+    }
+    Ok(Stmt::ForIn { item, list, body })
 }
 
 pub(crate) fn build_save(pair: Pair<Rule>) -> Result<Stmt, ParseError> {

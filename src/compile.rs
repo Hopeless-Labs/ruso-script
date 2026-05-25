@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use ruso_runtime::opcode::Opcode as Instr;
 use ruso_runtime::{BytecodeProgram, EvidenceKind, ExtractSource, QualifiedMatch};
 
-use crate::script::ast::Stmt;
+use crate::script::ast::{ListSource, Stmt, Value};
 use crate::script::Program;
 use crate::spec_build::build_program_spec;
 
@@ -44,7 +44,7 @@ fn needs_finding_title(stmt: &Stmt) -> bool {
         | Stmt::Assert(_)
         | Stmt::Evidence(_) => true,
         Stmt::If { body, .. } => body.iter().any(needs_finding_title),
-        Stmt::Repeat { body, .. } => body.iter().any(needs_finding_title),
+        Stmt::Repeat { body, .. } | Stmt::ForIn { body, .. } => body.iter().any(needs_finding_title),
         _ => false,
     }
 }
@@ -99,6 +99,14 @@ impl Compiler {
         id
     }
 
+    fn string_span(&mut self, values: &[String]) -> (u32, u16) {
+        let start = self.strings.len() as u32;
+        for value in values {
+            self.strings.push(value.clone());
+        }
+        (start, values.len() as u16)
+    }
+
     fn payload_id(&mut self, bytes: Vec<u8>) -> u32 {
         if let Some(&id) = self.payload_ids.get(&bytes) {
             return id;
@@ -143,8 +151,16 @@ impl Compiler {
         match stmt {
             Stmt::Set { name, value } => {
                 let name = self.str_id(name);
-                let value = self.str_id(value);
-                self.emit(Instr::Set { name, value });
+                match value {
+                    Value::String(value) => {
+                        let value = self.str_id(value);
+                        self.emit(Instr::Set { name, value });
+                    }
+                    Value::List(values) => {
+                        let (start, len) = self.string_span(values);
+                        self.emit(Instr::SetList { name, start, len });
+                    }
+                }
             }
             Stmt::Send { probe, payload } => {
                 let probe = self.str_id(probe);
@@ -201,6 +217,46 @@ impl Compiler {
                 self.code[repeat_pc] = Instr::Repeat {
                     count: *count,
                     end_pc,
+                };
+            }
+            Stmt::ForIn { item, list, body } => {
+                let item = self.str_id(item);
+                let enter = match list {
+                    ListSource::Literal(values) => {
+                        let (start, len) = self.string_span(values);
+                        Instr::ForList {
+                            item,
+                            start,
+                            len,
+                            end_pc: 0,
+                        }
+                    }
+                    ListSource::Variable(name) => {
+                        let list = self.str_id(name);
+                        Instr::ForVar {
+                            item,
+                            list,
+                            end_pc: 0,
+                        }
+                    }
+                };
+                let for_pc = self.emit(enter);
+                self.emit_program(body);
+                self.emit(Instr::LoopBack);
+                let end_pc = self.code.len() as u32;
+                self.code[for_pc] = match self.code[for_pc].clone() {
+                    Instr::ForList { item, start, len, .. } => Instr::ForList {
+                        item,
+                        start,
+                        len,
+                        end_pc,
+                    },
+                    Instr::ForVar { item, list, .. } => Instr::ForVar {
+                        item,
+                        list,
+                        end_pc,
+                    },
+                    other => other,
                 };
             }
             Stmt::Break => {

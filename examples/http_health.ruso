@@ -4,7 +4,7 @@ metadata {
     impact "Demonstrates http/send/match/evidence for HTTP"
     severity info
     author "ruso-lab"
-    references "https://github.com/Hopeless-Labs/ruso-script/tree/main/examples"
+    references ["https://github.com/Hopeless-Labs/ruso-script/tree/main/examples"]
 }
 
 http health {

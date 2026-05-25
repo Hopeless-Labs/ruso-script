@@ -1,6 +1,6 @@
 # Ruso DSL reference
 
-Scripts use the `.ruso` extension. Syntax is line-oriented statements; blocks use `keyword name { … }` with `end` closing `if`, `match all`, `match any`, and `repeat`.
+Scripts use the `.ruso` extension. Syntax is line-oriented statements; blocks use `keyword name { … }` with `end` closing `if`, `match all`, `match any`, `repeat`, and `for`.
 
 Keywords are **case-insensitive** (`HTTP`, `http`, `Send` are equivalent).
 
@@ -15,9 +15,9 @@ metadata {
     impact "Risk if positive"
     severity high
     author "team"
-    cve "CVE-2024-1234"
-    cwe "CWE-79"
-    references "https://example.com/advisory"
+    cve ["CVE-2024-1234"]
+    cwe ["CWE-79"]
+    references ["https://example.com/advisory"]
     cvss_score 9.8
     cvss "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
     mitigation "Apply security patch"
@@ -38,7 +38,7 @@ Comments start with `#`.
 
 ## Metadata
 
-All finding metadata lives in a single `metadata { … }` block at the top of the script (before probe definitions). Lines inside the block use the same keywords as before; you may repeat list fields (`cve`, `cwe`, `references`, `cvss`, `cvss_score`, `mitigation`) on separate lines.
+All finding metadata lives in a single `metadata { … }` block at the top of the script (before probe definitions). `cve`, `cwe`, and `references` are list literals; the other metadata fields keep their existing scalar / repeatable forms.
 
 | Statement | Example (inside `metadata { }`) |
 |-----------|---------|
@@ -48,22 +48,23 @@ All finding metadata lives in a single `metadata { … }` block at the top of th
 | `severity` | `severity low \| medium \| high \| critical \| info` |
 | `author` | `author "ruso-lab"` |
 | `report` | `report "Report title override"` |
-| `cve` | `cve "CVE-2024-1234"` (repeat to list multiple) |
-| `cwe` | `cwe "CWE-79"` (repeat to list multiple) |
-| `references` | `references "https://…"` (repeat to list multiple) |
+| `cve` | `cve ["CVE-2024-1234", "CVE-2024-5678"]` |
+| `cwe` | `cwe ["CWE-79"]` |
+| `references` | `references ["https://…", "https://…"]` |
 | `cvss` | `cvss "CVSS:3.1/…"` full vector string (repeat to list multiple) |
 | `cvss_score` | `cvss_score 9.8` numeric score literal (repeat to list multiple) |
 | `mitigation` | `mitigation "…"` remediation text (repeat to list multiple) |
 
-Repeat list fields on separate lines inside the block. Use `cvss` for vectors and `cvss_score` for scores (e.g. base + temporal). Values are stored on `CheckMetadata` and copied into findings and scan reports unchanged.
+`cve`, `cwe`, and `references` stay stored as `Vec<String>` in metadata, findings, and reports. Use `cvss` for vectors and `cvss_score` for scores (e.g. base + temporal).
 
 ## Variables
 
 ```ruso
 set token "abc123"
+set hosts ["a.example", "b.example"]
 ```
 
-Values support `"{{ variable }}"` interpolation in strings where the grammar allows `interpolation`.
+`set` accepts either a string or a string list. String values support `"{{ variable }}"` interpolation in places where the grammar allows quoted strings.
 
 ### Scan target variables (from CLI `--target`)
 
@@ -228,12 +229,20 @@ repeat 3
     match dialog.response contains "PONG"
     break
 end
+
+for host in ["a.example", "b.example"]
+    set current_host "{{ host }}"
+    send dialog
+end
 ```
 
 - `repeat N` — body runs N times (`LoopBack` decrements counter).
+- `for item in ["a", "b"]` — iterate a literal string list.
+- `for item in hosts` — iterate a list variable created by `set hosts ["a", "b"]`.
 - `break` — jump to instruction after the loop.
+- `continue` — skip to the next iteration of the current `repeat` / `for`.
 
-There is no `while` or `for` with variables yet—only fixed-count `repeat`.
+There is still no `while`; looping is `repeat N` or `for item in <list>`.
 
 ## Extract and save
 
@@ -280,7 +289,7 @@ sleep 1s
 | `stop` | Stop script; **no finding** emitted (even if matchers passed) |
 | `exit` | Stop script; emit finding if matchers passed and `name`/`report` set |
 | `fail` | Abort with error |
-| `continue` | Reserved — no effect today (do not rely on it) |
+| `continue` | Skip to the next iteration of the current loop |
 
 Scripts with `match` / `evidence` must include `name "…"` or `report "…"` or compilation fails.
 

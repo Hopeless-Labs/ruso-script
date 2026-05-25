@@ -23,6 +23,18 @@ pub struct SocketProbe {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum Value {
+    String(String),
+    List(Vec<String>),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ListSource {
+    Literal(Vec<String>),
+    Variable(String),
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum Stmt {
     Name(String),
     Description(String),
@@ -39,7 +51,13 @@ pub enum Stmt {
 
     Set {
         name: String,
-        value: String,
+        value: Value,
+    },
+
+    ForIn {
+        item: String,
+        list: ListSource,
+        body: Vec<Stmt>,
     },
 
     Http {

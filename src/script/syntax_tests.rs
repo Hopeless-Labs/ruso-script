@@ -16,6 +16,10 @@ fn parse_metadata_one(source: &str) -> Stmt {
     parse_one(&format!("metadata {{\n{source}\n}}"))
 }
 
+fn parse_program(source: &str) -> Program {
+    parse(source).unwrap_or_else(|err| panic!("parse failed: {err}\n---\n{source}"))
+}
+
 fn field(target: &str, kind: FieldKind) -> QualifiedField {
     QualifiedField {
         target: target.into(),
@@ -85,22 +89,30 @@ fn parse_report() {
 
 #[test]
 fn parse_cve() {
+    let program = parse_program("metadata {\ncve [\"CVE-2024-1234\", \"CVE-2024-9999\"]\n}");
     assert_eq!(
-        parse_metadata_one("cve \"CVE-2024-1234\""),
-        Stmt::Cve("CVE-2024-1234".into())
+        program.statements,
+        vec![Stmt::Cve("CVE-2024-1234".into()), Stmt::Cve("CVE-2024-9999".into())]
     );
 }
 
 #[test]
 fn parse_cwe() {
-    assert_eq!(parse_metadata_one("cwe \"CWE-79\""), Stmt::Cwe("CWE-79".into()));
+    let program = parse_program("metadata {\ncwe [\"CWE-79\"]\n}");
+    assert_eq!(program.statements, vec![Stmt::Cwe("CWE-79".into())]);
 }
 
 #[test]
 fn parse_references() {
+    let program = parse_program(
+        "metadata {\nreferences [\"https://example.com/a\", \"https://example.com/b\"]\n}",
+    );
     assert_eq!(
-        parse_metadata_one("references \"https://example.com/advisory\""),
-        Stmt::Reference("https://example.com/advisory".into())
+        program.statements,
+        vec![
+            Stmt::Reference("https://example.com/a".into()),
+            Stmt::Reference("https://example.com/b".into())
+        ]
     );
 }
 
@@ -154,7 +166,7 @@ fn parse_set() {
         parse_one("set email \"admin@test.com\""),
         Stmt::Set {
             name: "email".into(),
-            value: "admin@test.com".into(),
+            value: Value::String("admin@test.com".into()),
         }
     );
 }
@@ -165,7 +177,48 @@ fn parse_set_with_interpolation() {
         parse_one("set token \"{{ csrf_token }}\""),
         Stmt::Set {
             name: "token".into(),
-            value: "{{ csrf_token }}".into(),
+            value: Value::String("{{ csrf_token }}".into()),
+        }
+    );
+}
+
+#[test]
+fn parse_set_list() {
+    assert_eq!(
+        parse_one("set hosts [\"a.example\", \"{{ scan_host }}\"]"),
+        Stmt::Set {
+            name: "hosts".into(),
+            value: Value::List(vec!["a.example".into(), "{{ scan_host }}".into()]),
+        }
+    );
+}
+
+#[test]
+fn parse_for_literal_list() {
+    assert_eq!(
+        parse_one("for host in [\"a.example\", \"b.example\"]\n    set current \"{{ host }}\"\nend"),
+        Stmt::ForIn {
+            item: "host".into(),
+            list: ListSource::Literal(vec!["a.example".into(), "b.example".into()]),
+            body: vec![Stmt::Set {
+                name: "current".into(),
+                value: Value::String("{{ host }}".into()),
+            }],
+        }
+    );
+}
+
+#[test]
+fn parse_for_variable_list() {
+    assert_eq!(
+        parse_one("for host in hosts\n    send probe\nend"),
+        Stmt::ForIn {
+            item: "host".into(),
+            list: ListSource::Variable("hosts".into()),
+            body: vec![Stmt::Send {
+                probe: "probe".into(),
+                payload: None,
+            }],
         }
     );
 }

@@ -91,6 +91,7 @@ pub(crate) fn build_statement(pair: Pair<Rule>) -> Result<Vec<Stmt>, ParseError>
         Rule::extract_stmt => vec![statements::build_extract(inner)?],
         Rule::if_block => vec![statements::build_if(inner)?],
         Rule::repeat_block => vec![statements::build_repeat(inner)?],
+        Rule::for_block => vec![statements::build_for(inner)?],
         Rule::save_stmt => vec![statements::build_save(inner)?],
         Rule::evidence_stmt => vec![statements::build_evidence(inner)?],
         Rule::flow_stmt => vec![statements::build_flow(inner)?],

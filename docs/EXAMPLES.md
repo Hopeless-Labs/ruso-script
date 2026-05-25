@@ -22,7 +22,7 @@ cd ../ruso-cli && cargo build --release
 
 **Concepts:** `http` probe, `send`, `match` on `status` and `body`.
 
-**Metadata:** `references` only (info/demo check).
+**Metadata:** `references [...]` only (info/demo check).
 
 **Run:**
 
@@ -40,7 +40,7 @@ Requires a reachable HTTPS target; adjust matchers to match the real response.
 
 **Concepts:** `dns` without `port`/`payload`, `match lookup.answer`.
 
-**Metadata:** `references` (resolver-mode demo).
+**Metadata:** `references [...]` (resolver-mode demo).
 
 **Run:** `--target` is unused for resolution; host is `one.one.one.one` in the script.
 
@@ -56,7 +56,7 @@ Requires a reachable HTTPS target; adjust matchers to match the real response.
 - Binary DNS packet (query for `example.com`)  
 - `match wire_a.response regex '.+'` (non-empty reply)
 
-**Metadata:** `cwe`, `references` (wire-format demo).
+**Metadata:** `cwe [...]`, `references [...]` (wire-format demo).
 
 **Run:** Needs UDP/53 reachability to `1.1.1.1` (or change `host`).
 
@@ -72,7 +72,7 @@ Requires a reachable HTTPS target; adjust matchers to match the real response.
 - SSH sends banner on connect  
 - `match ssh_banner.response contains "SSH"`
 
-**Metadata:** `cwe`, `cvss_score`, `references` (banner disclosure / fingerprinting).
+**Metadata:** `cwe [...]`, `cvss_score`, `references [...]` (banner disclosure / fingerprinting).
 
 **Run:** Example uses `scanme.nmap.org:22`; use only on systems you are allowed to scan.
 
@@ -88,7 +88,7 @@ Requires a reachable HTTPS target; adjust matchers to match the real response.
 - `match redis_ping.response contains "PONG"`  
 - `evidence redis_ping regex 'PONG'`
 
-**Metadata:** full advisory block — `cve`, `cwe`, `cvss`, `cvss_score`, `references`, `mitigation` (repeatable lines).
+**Metadata:** advisory block with `cve [...]`, `cwe [...]`, `cvss`, `cvss_score`, `references [...]`, `mitigation`.
 
 **Run:** Uses `host "{{scan_host}}"` from `--target`. Example: `ruso scan --script examples/tcp_redis_unauth.ruso --target http://127.0.0.1:6379` (port 6379 is still from the probe block).
 
@@ -103,7 +103,7 @@ Requires a reachable HTTPS target; adjust matchers to match the real response.
 - `udp` + `port 123` + 48 zero bytes (NTP client request)  
 - `pool.ntp.org` as example host
 
-**Metadata:** `cve`, `cwe`, `cvss`, `cvss_score`, `references`, `mitigation` (NTP amplification class).
+**Metadata:** `cve [...]`, `cwe [...]`, `cvss`, `cvss_score`, `references [...]`, `mitigation` (NTP amplification class).
 
 **Run:** May timeout on firewalled networks; validates UDP send/receive path.
 
@@ -111,15 +111,15 @@ Requires a reachable HTTPS target; adjust matchers to match the real response.
 
 ## `tcp_session_loop.ruso`
 
-**Purpose:** Stateful TCP + loop.
+**Purpose:** Stateful TCP + list-driven loop.
 
 **Concepts:**
 
 - `session true` — reuse connection  
 - `read_idle 200ms` — aggregate multi-packet reads  
-- `repeat 2 { send … match … }` — generic multi-step without new opcodes  
+- `set attempts ["first", "second"]` + `for attempt in attempts` — iterate from a list variable  
 
-**Metadata:** `cwe`, `cvss_score`, `references`, `mitigation` (session reuse on unauthenticated Redis).
+**Metadata:** `cwe [...]`, `cvss_score`, `references [...]`, `mitigation` (session reuse on unauthenticated Redis).
 
 **Run:** Requires Redis on `127.0.0.1:6379` (same as redis example).
 
@@ -139,7 +139,7 @@ Requires a reachable HTTPS target; adjust matchers to match the real response.
 ## Writing your own
 
 1. Copy the closest example.  
-2. Change metadata for your finding (`name`, `severity`, `cve`, `cwe`, `references`, `cvss`, `cvss_score`, `mitigation`, …).  
+2. Change metadata for your finding (`name`, `severity`, `cve [...]`, `cwe [...]`, `references [...]`, `cvss`, `cvss_score`, `mitigation`, …).  
 3. Adjust `host`/`port`/`payload` or HTTP `path`.  
 4. Tighten matchers to reduce false positives.  
 5. Add `evidence` for report body.

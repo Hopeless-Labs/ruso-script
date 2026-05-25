@@ -4,11 +4,13 @@ metadata {
     impact "Demonstrates session, read_idle, and repeat for multi-step socket checks"
     severity high
     author "ruso-lab"
-    cwe "CWE-306"
+    cwe ["CWE-306"]
     cvss_score 8.1
-    references "https://redis.io/docs/management/security/"
+    references ["https://redis.io/docs/management/security/"]
     mitigation "Require AUTH on Redis and close idle sessions from untrusted networks"
 }
+
+set attempts ["first", "second"]
 
 tcp dialog {
     host "{{scan_host}}"
@@ -18,7 +20,7 @@ tcp dialog {
     payload "*1\r\n$4\r\nPING\r\n"
 }
 
-repeat 2 {
+for attempt in attempts
     send dialog
     match dialog.response contains "PONG"
-}
+end
