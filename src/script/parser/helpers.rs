@@ -1,6 +1,8 @@
 use pest::iterators::{Pair, Pairs};
 
-use crate::script::ast::{BodyValue, CmpOp, CmpValue, HttpMethod, InlinePart, InlinePartBody, Severity};
+use crate::script::ast::{
+    BodyValue, CmpOp, CmpValue, HttpMethod, InlinePart, InlinePartBody, Severity,
+};
 use crate::script::grammar::Rule;
 
 pub(crate) fn unquote_string(pair: Pair<Rule>) -> String {
@@ -35,7 +37,10 @@ pub(crate) fn parse_list_items(pair: Pair<Rule>) -> Vec<String> {
     let target = if pair.as_rule() == Rule::list_lit {
         pair
     } else {
-        match pair.into_inner().find(|inner| inner.as_rule() == Rule::list_lit) {
+        match pair
+            .into_inner()
+            .find(|inner| inner.as_rule() == Rule::list_lit)
+        {
             Some(list) => list,
             None => return Vec::new(),
         }
@@ -43,7 +48,12 @@ pub(crate) fn parse_list_items(pair: Pair<Rule>) -> Vec<String> {
 
     target
         .into_inner()
-        .filter(|item| matches!(item.as_rule(), Rule::list_item | Rule::string | Rule::interpolation))
+        .filter(|item| {
+            matches!(
+                item.as_rule(),
+                Rule::list_item | Rule::string | Rule::interpolation
+            )
+        })
         .map(|item| match item.as_rule() {
             Rule::list_item => item
                 .into_inner()

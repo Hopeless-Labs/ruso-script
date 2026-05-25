@@ -24,7 +24,9 @@ pub(crate) fn build_metadata(pair: Pair<Rule>) -> Result<Vec<Stmt>, ParseError> 
     Ok(match keyword.as_rule() {
         Rule::kw_name => vec![Stmt::Name(value.map(unquote_string).unwrap_or_default())],
         Rule::kw_description => {
-            vec![Stmt::Description(value.map(unquote_string).unwrap_or_default())]
+            vec![Stmt::Description(
+                value.map(unquote_string).unwrap_or_default(),
+            )]
         }
         Rule::kw_impact => vec![Stmt::Impact(value.map(unquote_string).unwrap_or_default())],
         Rule::kw_severity => vec![Stmt::Severity(parse_severity(
@@ -55,7 +57,9 @@ pub(crate) fn build_metadata(pair: Pair<Rule>) -> Result<Vec<Stmt>, ParseError> 
             value.map(|p| p.as_str().to_string()).unwrap_or_default(),
         )],
         Rule::kw_mitigation => {
-            vec![Stmt::Mitigation(value.map(unquote_string).unwrap_or_default())]
+            vec![Stmt::Mitigation(
+                value.map(unquote_string).unwrap_or_default(),
+            )]
         }
         rule => return Err(ParseError::UnexpectedRule(rule)),
     })

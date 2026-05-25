@@ -5,13 +5,15 @@ use std::collections::HashMap;
 use ruso_runtime::opcode::Opcode as Instr;
 use ruso_runtime::{BytecodeProgram, EvidenceKind, ExtractSource, QualifiedMatch};
 
-use crate::script::ast::{ListSource, Stmt, Value};
 use crate::script::Program;
+use crate::script::ast::{ListSource, Stmt, Value};
 use crate::spec_build::build_program_spec;
 
 #[derive(Debug, thiserror::Error)]
 pub enum CompileError {
-    #[error("script has match/evidence logic but no `name` or `report` metadata for the finding title")]
+    #[error(
+        "script has match/evidence logic but no `name` or `report` metadata for the finding title"
+    )]
     MissingFindingTitle,
 }
 
@@ -44,7 +46,9 @@ fn needs_finding_title(stmt: &Stmt) -> bool {
         | Stmt::Assert(_)
         | Stmt::Evidence(_) => true,
         Stmt::If { body, .. } => body.iter().any(needs_finding_title),
-        Stmt::Repeat { body, .. } | Stmt::ForIn { body, .. } => body.iter().any(needs_finding_title),
+        Stmt::Repeat { body, .. } | Stmt::ForIn { body, .. } => {
+            body.iter().any(needs_finding_title)
+        }
         _ => false,
     }
 }
@@ -245,17 +249,15 @@ impl Compiler {
                 self.emit(Instr::LoopBack);
                 let end_pc = self.code.len() as u32;
                 self.code[for_pc] = match self.code[for_pc].clone() {
-                    Instr::ForList { item, start, len, .. } => Instr::ForList {
+                    Instr::ForList {
+                        item, start, len, ..
+                    } => Instr::ForList {
                         item,
                         start,
                         len,
                         end_pc,
                     },
-                    Instr::ForVar { item, list, .. } => Instr::ForVar {
-                        item,
-                        list,
-                        end_pc,
-                    },
+                    Instr::ForVar { item, list, .. } => Instr::ForVar { item, list, end_pc },
                     other => other,
                 };
             }
@@ -322,12 +324,12 @@ impl Compiler {
 mod tests {
     use ruso_runtime::opcode::Opcode as Instr;
 
+    use crate::script::Program;
     use crate::script::ast::{
         CmpOp, CmpValue, FieldKind, MatchPredicate, QualifiedField, QualifiedMatch, Stmt,
     };
-    use crate::script::Program;
 
-    use super::{compile, CompileError};
+    use super::{CompileError, compile};
 
     #[test]
     fn compile_skips_metadata_and_probe_definitions() {

@@ -1,11 +1,11 @@
 use pest::iterators::Pair;
 
-use crate::script::ast::{
-    FieldKind, MatchPredicate, QualifiedField, QualifiedMatch, Stmt,
-};
+use crate::script::ast::{FieldKind, MatchPredicate, QualifiedField, QualifiedMatch, Stmt};
 use crate::script::grammar::Rule;
 use crate::script::parser::ParseError;
-use crate::script::parser::helpers::{parse_cmp_op, parse_cmp_value, unquote_regex, unquote_string};
+use crate::script::parser::helpers::{
+    parse_cmp_op, parse_cmp_value, unquote_regex, unquote_string,
+};
 
 pub(crate) fn build_match_group(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
     let mut is_all = false;
@@ -60,7 +60,9 @@ pub(crate) fn build_qualified_expr(pair: Pair<Rule>) -> Result<QualifiedMatch, P
         Rule::kw_not_contains => {
             MatchPredicate::NotContains(inner.next().map(unquote_string).unwrap_or_default())
         }
-        Rule::kw_regex => MatchPredicate::Regex(inner.next().map(unquote_regex).unwrap_or_default()),
+        Rule::kw_regex => {
+            MatchPredicate::Regex(inner.next().map(unquote_regex).unwrap_or_default())
+        }
         rule => return Err(ParseError::UnexpectedRule(rule)),
     };
 

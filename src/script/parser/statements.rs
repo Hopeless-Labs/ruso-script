@@ -122,7 +122,10 @@ pub(crate) fn build_extract(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
     Ok(Stmt::Extract { name, source })
 }
 
-fn build_extract_source(pair: Pair<Rule>, regex: Option<String>) -> Result<ExtractSource, ParseError> {
+fn build_extract_source(
+    pair: Pair<Rule>,
+    regex: Option<String>,
+) -> Result<ExtractSource, ParseError> {
     let mut inner = pair.into_inner();
     let target = inner
         .next()
@@ -138,7 +141,10 @@ fn build_extract_source(pair: Pair<Rule>, regex: Option<String>) -> Result<Extra
         Rule::kw_body => Ok(ExtractSource::Body { target, regex }),
         Rule::kw_header => Ok(ExtractSource::Header {
             target,
-            name: inner.next().map(super::helpers::unquote_string).unwrap_or_default(),
+            name: inner
+                .next()
+                .map(super::helpers::unquote_string)
+                .unwrap_or_default(),
         }),
         rule => Err(ParseError::UnexpectedRule(rule)),
     }
@@ -168,10 +174,7 @@ pub(crate) fn build_evidence(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
         }
         Rule::kw_regex => Ok(Stmt::Evidence(EvidenceKind::Regex {
             target: probe,
-            pattern: inner
-                .next()
-                .map(unquote_regex)
-                .unwrap_or_default(),
+            pattern: inner.next().map(unquote_regex).unwrap_or_default(),
         })),
         rule => Err(ParseError::UnexpectedRule(rule)),
     }
@@ -191,7 +194,9 @@ pub(crate) fn build_flow(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
 
 pub(crate) fn build_retry(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
     let mut inner = pair.into_inner();
-    let first = inner.next().ok_or(ParseError::UnexpectedRule(Rule::retry_stmt))?;
+    let first = inner
+        .next()
+        .ok_or(ParseError::UnexpectedRule(Rule::retry_stmt))?;
     match first.as_rule() {
         Rule::kw_retry_delay => {
             let value = inner

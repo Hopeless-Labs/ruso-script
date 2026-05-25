@@ -69,7 +69,10 @@ fn build_http_item_inner(inner: Pair<Rule>) -> Result<HttpItem, ParseError> {
             parts.next();
             Ok(HttpItem::Cookie {
                 name: parts.next().map(unquote_string).unwrap_or_default(),
-                value: parts.next().map(string_or_interpolation).unwrap_or_default(),
+                value: parts
+                    .next()
+                    .map(string_or_interpolation)
+                    .unwrap_or_default(),
             })
         }
         Rule::query_item => {
@@ -77,7 +80,10 @@ fn build_http_item_inner(inner: Pair<Rule>) -> Result<HttpItem, ParseError> {
             parts.next();
             Ok(HttpItem::Query {
                 name: parts.next().map(unquote_string).unwrap_or_default(),
-                value: parts.next().map(string_or_interpolation).unwrap_or_default(),
+                value: parts
+                    .next()
+                    .map(string_or_interpolation)
+                    .unwrap_or_default(),
             })
         }
         Rule::data_item => Ok(HttpItem::Data(build_object_from_item(inner)?)),
@@ -109,18 +115,17 @@ fn build_http_option(pair: Pair<Rule>) -> Result<HttpItem, ParseError> {
     let value = inner.next();
 
     Ok(match keyword.as_rule() {
-        Rule::kw_timeout => HttpItem::Timeout(
-            value.map(|p| p.as_str().to_string()).unwrap_or_default(),
-        ),
-        Rule::kw_follow_redirect => HttpItem::FollowRedirect(parse_bool(
-            value.map(|p| p.as_str()).unwrap_or("false"),
-        )),
-        Rule::kw_verify_ssl => HttpItem::VerifySsl(parse_bool(
-            value.map(|p| p.as_str()).unwrap_or("false"),
-        )),
+        Rule::kw_timeout => {
+            HttpItem::Timeout(value.map(|p| p.as_str().to_string()).unwrap_or_default())
+        }
+        Rule::kw_follow_redirect => {
+            HttpItem::FollowRedirect(parse_bool(value.map(|p| p.as_str()).unwrap_or("false")))
+        }
+        Rule::kw_verify_ssl => {
+            HttpItem::VerifySsl(parse_bool(value.map(|p| p.as_str()).unwrap_or("false")))
+        }
         Rule::kw_proxy => HttpItem::Proxy(value.map(unquote_string).unwrap_or_default()),
         Rule::kw_user_agent => HttpItem::UserAgent(value.map(unquote_string).unwrap_or_default()),
         rule => return Err(ParseError::UnexpectedRule(rule)),
     })
 }
-

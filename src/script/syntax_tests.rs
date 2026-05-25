@@ -69,14 +69,26 @@ fn parse_impact() {
 
 #[test]
 fn parse_severity() {
-    assert_eq!(parse_metadata_one("severity high"), Stmt::Severity(Severity::High));
-    assert_eq!(parse_metadata_one("severity critical"), Stmt::Severity(Severity::Critical));
-    assert_eq!(parse_metadata_one("severity low"), Stmt::Severity(Severity::Low));
+    assert_eq!(
+        parse_metadata_one("severity high"),
+        Stmt::Severity(Severity::High)
+    );
+    assert_eq!(
+        parse_metadata_one("severity critical"),
+        Stmt::Severity(Severity::Critical)
+    );
+    assert_eq!(
+        parse_metadata_one("severity low"),
+        Stmt::Severity(Severity::Low)
+    );
 }
 
 #[test]
 fn parse_author() {
-    assert_eq!(parse_metadata_one("author \"jaeger\""), Stmt::Author("jaeger".into()));
+    assert_eq!(
+        parse_metadata_one("author \"jaeger\""),
+        Stmt::Author("jaeger".into())
+    );
 }
 
 #[test]
@@ -92,7 +104,10 @@ fn parse_cve() {
     let program = parse_program("metadata {\ncve [\"CVE-2024-1234\", \"CVE-2024-9999\"]\n}");
     assert_eq!(
         program.statements,
-        vec![Stmt::Cve("CVE-2024-1234".into()), Stmt::Cve("CVE-2024-9999".into())]
+        vec![
+            Stmt::Cve("CVE-2024-1234".into()),
+            Stmt::Cve("CVE-2024-9999".into())
+        ]
     );
 }
 
@@ -126,9 +141,18 @@ fn parse_cvss() {
 
 #[test]
 fn parse_cvss_score() {
-    assert_eq!(parse_metadata_one("cvss_score 9.8"), Stmt::CvssScore("9.8".into()));
-    assert_eq!(parse_metadata_one("cvss_score 7.5"), Stmt::CvssScore("7.5".into()));
-    assert_eq!(parse_metadata_one("cvss_score 10"), Stmt::CvssScore("10".into()));
+    assert_eq!(
+        parse_metadata_one("cvss_score 9.8"),
+        Stmt::CvssScore("9.8".into())
+    );
+    assert_eq!(
+        parse_metadata_one("cvss_score 7.5"),
+        Stmt::CvssScore("7.5".into())
+    );
+    assert_eq!(
+        parse_metadata_one("cvss_score 10"),
+        Stmt::CvssScore("10".into())
+    );
 }
 
 #[test]
@@ -151,10 +175,7 @@ fn parse_metadata_block() {
     .unwrap();
     assert_eq!(program.statements.len(), 3);
     assert_eq!(program.statements[0], Stmt::Name("Open Redis".into()));
-    assert_eq!(
-        program.statements[1],
-        Stmt::Severity(Severity::Critical)
-    );
+    assert_eq!(program.statements[1], Stmt::Severity(Severity::Critical));
     assert_eq!(program.statements[2], Stmt::CvssScore("9.8".into()));
 }
 
@@ -196,7 +217,9 @@ fn parse_set_list() {
 #[test]
 fn parse_for_literal_list() {
     assert_eq!(
-        parse_one("for host in [\"a.example\", \"b.example\"]\n    set current \"{{ host }}\"\nend"),
+        parse_one(
+            "for host in [\"a.example\", \"b.example\"]\n    set current \"{{ host }}\"\nend"
+        ),
         Stmt::ForIn {
             item: "host".into(),
             list: ListSource::Literal(vec!["a.example".into(), "b.example".into()]),
@@ -398,10 +421,7 @@ fn parse_request_data() {
             name: "home".into(),
             items: vec![HttpItem::Data(ObjectBody {
                 pairs: vec![
-                    (
-                        "email".into(),
-                        BodyValue::String("{{ email }}".into()),
-                    ),
+                    ("email".into(), BodyValue::String("{{ email }}".into()),),
                     ("password".into(), BodyValue::String("admin".into())),
                 ],
             })],
@@ -538,9 +558,7 @@ fn parse_payload_string_is_literal_text() {
     // Without `bytes`, the payload is treated literally as UTF-8 bytes.
     // Pre-refactor, a string of hex digits would have been auto-detected as
     // bytes (foot-gun) — this test pins down the explicit-only behavior.
-    let stmt = parse_one(
-        "tcp probe {\n    host \"h\"\n    port 1\n    payload \"deadbeef\"\n}",
-    );
+    let stmt = parse_one("tcp probe {\n    host \"h\"\n    port 1\n    payload \"deadbeef\"\n}");
     match stmt {
         Stmt::Tcp(probe) => {
             assert_eq!(probe.payload.as_deref(), Some(b"deadbeef" as &[u8]));
@@ -551,9 +569,8 @@ fn parse_payload_string_is_literal_text() {
 
 #[test]
 fn parse_payload_bytes_decodes_hex() {
-    let stmt = parse_one(
-        "tcp probe {\n    host \"h\"\n    port 1\n    payload bytes \"deadbeef\"\n}",
-    );
+    let stmt =
+        parse_one("tcp probe {\n    host \"h\"\n    port 1\n    payload bytes \"deadbeef\"\n}");
     match stmt {
         Stmt::Tcp(probe) => {
             let expected: &[u8] = &[0xde, 0xad, 0xbe, 0xef];
@@ -623,11 +640,7 @@ fn parse_match_status_ne() {
 fn parse_match_body_contains() {
     assert_eq!(
         parse_one("match home.body contains \"Laravel\""),
-        Stmt::Match(contains(
-            "home",
-            FieldKind::Body,
-            "Laravel",
-        ))
+        Stmt::Match(contains("home", FieldKind::Body, "Laravel",))
     );
 }
 
@@ -695,11 +708,7 @@ fn parse_match_response_size() {
 fn parse_match_dns_answer() {
     assert_eq!(
         parse_one("match dns_check.answer contains \"1.1.1.1\""),
-        Stmt::Match(contains(
-            "dns_check",
-            FieldKind::Answer,
-            "1.1.1.1",
-        ))
+        Stmt::Match(contains("dns_check", FieldKind::Answer, "1.1.1.1",))
     );
 }
 
@@ -707,27 +716,16 @@ fn parse_match_dns_answer() {
 fn parse_match_tcp_banner() {
     assert_eq!(
         parse_one("match ssh_check.banner contains \"OpenSSH\""),
-        Stmt::Match(contains(
-            "ssh_check",
-            FieldKind::Banner,
-            "OpenSSH",
-        ))
+        Stmt::Match(contains("ssh_check", FieldKind::Banner, "OpenSSH",))
     );
 }
 
 #[test]
 fn parse_match_all() {
     assert_eq!(
-        parse_one(
-            "match all\n    login.status == 302\n    login.body contains \"Dashboard\"\nend"
-        ),
+        parse_one("match all\n    login.status == 302\n    login.body contains \"Dashboard\"\nend"),
         Stmt::MatchAll(vec![
-            compare(
-                "login",
-                FieldKind::Status,
-                CmpOp::Eq,
-                CmpValue::Number(302),
-            ),
+            compare("login", FieldKind::Status, CmpOp::Eq, CmpValue::Number(302),),
             contains("login", FieldKind::Body, "Dashboard"),
         ])
     );
@@ -766,9 +764,7 @@ fn parse_assert() {
 #[test]
 fn parse_extract_body_regex() {
     assert_eq!(
-        parse_one(
-            "extract csrf_token\nfrom home.body\nregex 'csrf-token=\"(.*?)\"'"
-        ),
+        parse_one("extract csrf_token\nfrom home.body\nregex 'csrf-token=\"(.*?)\"'"),
         Stmt::Extract {
             name: "csrf_token".into(),
             source: ExtractSource::Body {
@@ -798,21 +794,10 @@ fn parse_extract_header() {
 #[test]
 fn parse_if_block() {
     assert_eq!(
-        parse_one(
-            "if home.status == 200\n    match home.body contains \"Laravel\"\nend"
-        ),
+        parse_one("if home.status == 200\n    match home.body contains \"Laravel\"\nend"),
         Stmt::If {
-            condition: compare(
-                "home",
-                FieldKind::Status,
-                CmpOp::Eq,
-                CmpValue::Number(200),
-            ),
-            body: vec![Stmt::Match(contains(
-                "home",
-                FieldKind::Body,
-                "Laravel",
-            ))],
+            condition: compare("home", FieldKind::Status, CmpOp::Eq, CmpValue::Number(200),),
+            body: vec![Stmt::Match(contains("home", FieldKind::Body, "Laravel",))],
         }
     );
 }
@@ -896,10 +881,7 @@ fn parse_retry() {
 
 #[test]
 fn parse_retry_delay() {
-    assert_eq!(
-        parse_one("retry_delay 1s"),
-        Stmt::RetryDelay("1s".into())
-    );
+    assert_eq!(parse_one("retry_delay 1s"), Stmt::RetryDelay("1s".into()));
 }
 
 #[test]
@@ -911,20 +893,14 @@ fn parse_sleep() {
 
 #[test]
 fn parse_ignores_comments_and_blank_lines() {
-    let program = parse(
-        "# metadata block\n\nmetadata {\nname \"test\"\n}\n\n# end\n",
-    )
-    .unwrap();
+    let program = parse("# metadata block\n\nmetadata {\nname \"test\"\n}\n\n# end\n").unwrap();
     assert_eq!(program.statements.len(), 1);
     assert_eq!(program.statements[0], Stmt::Name("test".into()));
 }
 
 #[test]
 fn parse_case_insensitive_keywords() {
-    assert_eq!(
-        parse_metadata_one("NAME \"x\"\n"),
-        Stmt::Name("x".into())
-    );
+    assert_eq!(parse_metadata_one("NAME \"x\"\n"), Stmt::Name("x".into()));
     assert_eq!(
         parse_one("Match HOME.STATUS == 200"),
         Stmt::Match(compare(

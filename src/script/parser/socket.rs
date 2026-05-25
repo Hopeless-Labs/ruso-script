@@ -22,7 +22,10 @@ pub(crate) fn build_socket_block(pair: Pair<Rule>) -> Result<SocketProbe, ParseE
     let mut read_idle_ms = 0u32;
 
     for item in inner.filter(|p| p.as_rule() == Rule::socket_item) {
-        if let Some(payload_pair) = item.clone().into_inner().find(|p| p.as_rule() == Rule::payload_item)
+        if let Some(payload_pair) = item
+            .clone()
+            .into_inner()
+            .find(|p| p.as_rule() == Rule::payload_item)
         {
             let value = payload_pair
                 .into_inner()
@@ -90,7 +93,6 @@ pub(crate) fn build_socket_block(pair: Pair<Rule>) -> Result<SocketProbe, ParseE
 
 fn socket_item_keyword(item: &Pair<Rule>) -> String {
     item.as_str()
-        .trim()
         .split_whitespace()
         .next()
         .unwrap_or("")

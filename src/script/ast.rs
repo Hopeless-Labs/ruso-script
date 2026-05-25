@@ -148,18 +148,9 @@ pub enum HttpItem {
     VerifySsl(bool),
     Proxy(String),
     UserAgent(String),
-    Header {
-        name: String,
-        value: String,
-    },
-    Cookie {
-        name: String,
-        value: String,
-    },
-    Query {
-        name: String,
-        value: String,
-    },
+    Header { name: String, value: String },
+    Cookie { name: String, value: String },
+    Query { name: String, value: String },
     Data(ObjectBody),
     Json(ObjectBody),
     Raw(String),

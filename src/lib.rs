@@ -6,13 +6,18 @@
 //! - [Compiler](https://github.com/Hopeless-Labs/ruso-script/blob/main/docs/COMPILER.md)
 //! - [Examples](https://github.com/Hopeless-Labs/ruso-script/blob/main/docs/EXAMPLES.md)
 
-mod compile;
-mod spec_build;
-pub mod script;
+// `ParseError::Pest` wraps `pest::error::Error`, which carries spans + rule
+// chain for useful diagnostics and is naturally large. Boxing it would obscure
+// the public error type at call sites; the size lint is noise here.
+#![allow(clippy::result_large_err)]
 
-pub use compile::{compile, CompileError};
+mod compile;
+pub mod script;
+mod spec_build;
+
+pub use compile::{CompileError, compile};
 pub use ruso_runtime::{
-    encode_bytecode, BytecodeProgram, EvidenceKind, ExtractSource, QualifiedMatch, Severity,
+    BytecodeProgram, EvidenceKind, ExtractSource, QualifiedMatch, Severity, encode_bytecode,
 };
 pub use script::ast::{self, Program, Stmt};
 pub use script::{ParseError, parse};
@@ -56,23 +61,29 @@ pub async fn run(
     program: &Program,
     config: ruso_runtime::ExecutorConfig,
 ) -> Result<ruso_runtime::ExecutionResult, ruso_runtime::RuntimeError> {
-    let bytecode = compile_program(program)
-        .map_err(|e| ruso_runtime::RuntimeError::Other(e.to_string()))?;
-    ruso_runtime::Executor::from_bytecode(config, bytecode)?.run().await
+    let bytecode =
+        compile_program(program).map_err(|e| ruso_runtime::RuntimeError::Other(e.to_string()))?;
+    ruso_runtime::Executor::from_bytecode(config, bytecode)?
+        .run()
+        .await
 }
 
 pub async fn run_bytecode(
     bytecode: &BytecodeProgram,
     config: ruso_runtime::ExecutorConfig,
 ) -> Result<ruso_runtime::ExecutionResult, ruso_runtime::RuntimeError> {
-    ruso_runtime::Executor::from_bytecode(config, bytecode.clone())?.run().await
+    ruso_runtime::Executor::from_bytecode(config, bytecode.clone())?
+        .run()
+        .await
 }
 
 pub async fn run_bytes(
     bytes: &[u8],
     config: ruso_runtime::ExecutorConfig,
 ) -> Result<ruso_runtime::ExecutionResult, ruso_runtime::RuntimeError> {
-    ruso_runtime::Executor::from_bytes(config, bytes)?.run().await
+    ruso_runtime::Executor::from_bytes(config, bytes)?
+        .run()
+        .await
 }
 
 #[cfg(test)]
