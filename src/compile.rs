@@ -312,6 +312,7 @@ impl Compiler {
             | Stmt::Cvss(_)
             | Stmt::CvssScore(_)
             | Stmt::Mitigation(_)
+            | Stmt::Tag(_)
             | Stmt::Http { .. }
             | Stmt::Dns(_)
             | Stmt::Tcp(_)

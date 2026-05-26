@@ -61,6 +61,12 @@ pub(crate) fn build_metadata(pair: Pair<Rule>) -> Result<Vec<Stmt>, ParseError> 
                 value.map(unquote_string).unwrap_or_default(),
             )]
         }
+        Rule::kw_tags => value
+            .map(parse_list_items)
+            .unwrap_or_default()
+            .into_iter()
+            .map(Stmt::Tag)
+            .collect(),
         rule => return Err(ParseError::UnexpectedRule(rule)),
     })
 }

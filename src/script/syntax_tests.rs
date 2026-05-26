@@ -132,6 +132,19 @@ fn parse_references() {
 }
 
 #[test]
+fn parse_tags() {
+    let program = parse_program("metadata {\ntags [\"auth\", \"rce\", \"log4j\"]\n}");
+    assert_eq!(
+        program.statements,
+        vec![
+            Stmt::Tag("auth".into()),
+            Stmt::Tag("rce".into()),
+            Stmt::Tag("log4j".into())
+        ]
+    );
+}
+
+#[test]
 fn parse_cvss() {
     assert_eq!(
         parse_metadata_one("cvss \"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H\""),

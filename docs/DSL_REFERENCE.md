@@ -21,6 +21,7 @@ metadata {
     cvss_score 9.8
     cvss "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
     mitigation "Apply security patch"
+    tags ["auth", "rce", "log4j"]
 }
 
 # Probes (definitions only — no network yet)
@@ -38,7 +39,7 @@ Comments start with `#`.
 
 ## Metadata
 
-All finding metadata lives in a single `metadata { … }` block at the top of the script (before probe definitions). `cve`, `cwe`, and `references` are list literals; the other metadata fields keep their existing scalar / repeatable forms.
+All finding metadata lives in a single `metadata { … }` block at the top of the script (before probe definitions). `cve`, `cwe`, `references`, and `tags` are list literals; the other metadata fields keep their existing scalar / repeatable forms.
 
 | Statement | Example (inside `metadata { }`) |
 |-----------|---------|
@@ -54,8 +55,9 @@ All finding metadata lives in a single `metadata { … }` block at the top of th
 | `cvss` | `cvss "CVSS:3.1/…"` full vector string (repeat to list multiple) |
 | `cvss_score` | `cvss_score 9.8` numeric score literal (repeat to list multiple) |
 | `mitigation` | `mitigation "…"` remediation text (repeat to list multiple) |
+| `tags` | `tags ["auth", "rce", "log4j"]` free-form discovery labels |
 
-`cve`, `cwe`, and `references` stay stored as `Vec<String>` in metadata, findings, and reports. Use `cvss` for vectors and `cvss_score` for scores (e.g. base + temporal).
+`cve`, `cwe`, `references`, and `tags` stay stored as `Vec<String>` in metadata, findings, and reports. Use `cvss` for vectors and `cvss_score` for scores (e.g. base + temporal). Tags are unconstrained at the DSL level — downstream registries are free to enforce their own slug rules and per-script caps at publish time.
 
 ## Variables
 
