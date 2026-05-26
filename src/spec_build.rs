@@ -23,6 +23,11 @@ pub fn build_program_spec(statements: &[Stmt]) -> ProgramSpec {
             Stmt::CvssScore(value) => spec.metadata.cvss_score.push(value.clone()),
             Stmt::Mitigation(value) => spec.metadata.mitigation.push(value.clone()),
             Stmt::Tag(value) => spec.metadata.tags.push(value.clone()),
+            // Last-wins for repeated version declarations. Compile-time
+            // policy could reject duplicates, but the parser already
+            // emits one Stmt::Version per declaration so we let the
+            // final value land deterministically.
+            Stmt::Version(value) => spec.metadata.version = Some(value.clone()),
             Stmt::Http { name, items } => {
                 spec.probes
                     .insert(name.clone(), ProbeKind::Http(http_spec(items)));

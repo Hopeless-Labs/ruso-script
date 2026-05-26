@@ -67,6 +67,7 @@ pub(crate) fn build_metadata(pair: Pair<Rule>) -> Result<Vec<Stmt>, ParseError> 
             .into_iter()
             .map(Stmt::Tag)
             .collect(),
+        Rule::kw_version => vec![Stmt::Version(value.map(unquote_string).unwrap_or_default())],
         rule => return Err(ParseError::UnexpectedRule(rule)),
     })
 }

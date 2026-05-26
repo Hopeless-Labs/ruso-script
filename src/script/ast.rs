@@ -49,6 +49,7 @@ pub enum Stmt {
     CvssScore(String),
     Mitigation(String),
     Tag(String),
+    Version(String),
 
     Set {
         name: String,
@@ -130,6 +131,7 @@ impl Stmt {
                 | Self::CvssScore(_)
                 | Self::Mitigation(_)
                 | Self::Tag(_)
+                | Self::Version(_)
         )
     }
 

@@ -145,6 +145,20 @@ fn parse_tags() {
 }
 
 #[test]
+fn parse_version() {
+    let program = parse_program("metadata {\nversion \"1.2.3\"\n}");
+    assert_eq!(program.statements, vec![Stmt::Version("1.2.3".into())]);
+}
+
+#[test]
+fn parse_version_last_wins_in_spec() {
+    use crate::spec_build::build_program_spec;
+    let program = parse_program("metadata {\nversion \"0.1.0\"\nversion \"0.2.0\"\n}");
+    let spec = build_program_spec(&program.statements);
+    assert_eq!(spec.metadata.version.as_deref(), Some("0.2.0"));
+}
+
+#[test]
 fn parse_cvss() {
     assert_eq!(
         parse_metadata_one("cvss \"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H\""),
