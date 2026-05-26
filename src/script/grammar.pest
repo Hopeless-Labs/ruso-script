@@ -59,6 +59,8 @@ kw_post = @{ P ~ O ~ S ~ T }
 kw_put = @{ P ~ U ~ T }
 kw_patch = @{ P ~ A ~ T ~ C_ ~ H }
 kw_delete = @{ D ~ E ~ L ~ E ~ T ~ E }
+kw_head = @{ H ~ E ~ A ~ D }
+kw_options = @{ O ~ P ~ T ~ I ~ O ~ N ~ S }
 
 kw_header = @{ H ~ E ~ A ~ D ~ E ~ R }
 kw_cookie = @{ C_ ~ O ~ O ~ K ~ I ~ E }
@@ -152,7 +154,8 @@ list_lit = { "[" ~ BLANK ~ (list_item ~ (BLANK ~ comma ~ BLANK ~ list_item)*)? ~
 
 number = @{ ASCII_DIGIT+ }
 score_number = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? }
-duration = @{ ASCII_DIGIT+ ~ ("ms" | "s") }
+// `ms` must precede `s` so the longest match wins.
+duration = @{ ASCII_DIGIT+ ~ ("ms" | "s" | "m" | "h" | "d") }
 
 bool_true = @{ T ~ R ~ U ~ E }
 bool_false = @{ F ~ A ~ L ~ S ~ E }
@@ -217,7 +220,7 @@ part_item = {
 object_body = { l_brace ~ (pad? ~ body_pair)* ~ pad? ~ r_brace }
 
 // --- HTTP block items ---
-http_method = { kw_get | kw_post | kw_put | kw_patch | kw_delete }
+http_method = { kw_get | kw_post | kw_put | kw_patch | kw_delete | kw_head | kw_options }
 
 http_option = {
     kw_timeout ~ duration

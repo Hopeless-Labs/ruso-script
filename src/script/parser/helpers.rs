@@ -96,7 +96,13 @@ pub(crate) fn find_string(pairs: Pairs<Rule>) -> Option<String> {
 pub(crate) fn find_http_method_pair(pairs: Pairs<Rule>) -> Option<Pair<Rule>> {
     for pair in pairs {
         match pair.as_rule() {
-            Rule::kw_get | Rule::kw_post | Rule::kw_put | Rule::kw_patch | Rule::kw_delete => {
+            Rule::kw_get
+            | Rule::kw_post
+            | Rule::kw_put
+            | Rule::kw_patch
+            | Rule::kw_delete
+            | Rule::kw_head
+            | Rule::kw_options => {
                 return Some(pair);
             }
             Rule::http_method => return find_http_method_pair(pair.into_inner()),
@@ -113,6 +119,8 @@ pub(crate) fn parse_http_method(rule: Rule) -> HttpMethod {
         Rule::kw_put => HttpMethod::Put,
         Rule::kw_patch => HttpMethod::Patch,
         Rule::kw_delete => HttpMethod::Delete,
+        Rule::kw_head => HttpMethod::Head,
+        Rule::kw_options => HttpMethod::Options,
         _ => HttpMethod::Get,
     }
 }

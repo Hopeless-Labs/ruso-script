@@ -77,6 +77,20 @@ pub async fn run_bytecode(
         .await
 }
 
+/// Run a pre-shared [`Arc<BytecodeProgram>`] against a single target.
+///
+/// Prefer this over [`run_bytecode`] when running the same compiled script
+/// against many targets — the program is cloned via `Arc::clone` (a
+/// reference-count bump) instead of being deep-copied for each run.
+pub async fn run_program(
+    bytecode: std::sync::Arc<BytecodeProgram>,
+    config: ruso_runtime::ExecutorConfig,
+) -> Result<ruso_runtime::ExecutionResult, ruso_runtime::RuntimeError> {
+    ruso_runtime::Executor::from_program(config, bytecode)?
+        .run()
+        .await
+}
+
 pub async fn run_bytes(
     bytes: &[u8],
     config: ruso_runtime::ExecutorConfig,

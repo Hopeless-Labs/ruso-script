@@ -304,6 +304,51 @@ fn parse_request_method_delete() {
 }
 
 #[test]
+fn parse_request_method_head() {
+    // M10 regression: HEAD/OPTIONS were missing from the parser even though
+    // they're common in vuln scanners (HEAD for size probes, OPTIONS for
+    // CORS misconfig checks).
+    assert_eq!(
+        parse_one("http r {\n    method HEAD\n}"),
+        Stmt::Http {
+            name: "r".into(),
+            items: vec![HttpItem::Method(HttpMethod::Head)],
+        }
+    );
+}
+
+#[test]
+fn parse_request_method_options() {
+    assert_eq!(
+        parse_one("http r {\n    method OPTIONS\n}"),
+        Stmt::Http {
+            name: "r".into(),
+            items: vec![HttpItem::Method(HttpMethod::Options)],
+        }
+    );
+}
+
+#[test]
+fn parse_request_timeout_minutes_and_hours() {
+    // L3 regression: the duration parser only accepted ms/s. `5m` had to be
+    // written as `300s` for things like long-running auth flows.
+    assert_eq!(
+        parse_one("http home {\n    timeout 5m\n}"),
+        Stmt::Http {
+            name: "home".into(),
+            items: vec![HttpItem::Timeout("5m".into())],
+        }
+    );
+    assert_eq!(
+        parse_one("http home {\n    timeout 1h\n}"),
+        Stmt::Http {
+            name: "home".into(),
+            items: vec![HttpItem::Timeout("1h".into())],
+        }
+    );
+}
+
+#[test]
 fn parse_request_path() {
     assert_eq!(
         parse_one("http home {\n    path \"/\"\n}"),

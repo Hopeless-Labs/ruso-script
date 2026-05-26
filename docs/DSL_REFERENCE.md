@@ -82,11 +82,13 @@ Use in socket probes: `host "{{scan_host}}"`. **HTTP** probes still use `base_ur
 
 ```ruso
 http <name> {
-    method get | post | put | patch | delete
+    method get | post | put | patch | delete | head | options
     path "/api/health"
     timeout 30s
     follow_redirect true
-    verify_ssl true   # optional; overrides runtime default (skip verify). Use true for strict HTTPS checks
+    verify_ssl true   # optional; overrides the runtime default (`true`).
+                      # Set `false` only to scan targets with self-signed
+                      # certs you explicitly trust.
     proxy "http://127.0.0.1:8080"
     user_agent "ruso/1.0"
     header "X-Custom" "value"
@@ -101,6 +103,17 @@ http <name> {
 ```
 
 HTTP requests use `ExecutorConfig.base_url` from the CLI `--target` (scheme + host + optional port). Probe `path` is appended to that base.
+
+`path` may contain `{{ var }}` placeholders. An interpolation that expands
+the relative path into an *absolute* URL (`http://…` / `https://…`) is
+rejected at runtime as an SSRF guard — extracted values cannot redirect
+later probes to internal services. Scripts that intentionally hit a
+separate origin should write the absolute URL directly in `path`; that
+literal form is honoured.
+
+`cookie` lines in one HTTP block are emitted as a single `Cookie:` request
+header joined by `"; "` (RFC 6265 §5.4). Multiple `header` lines remain
+distinct request headers.
 
 ## Socket probes (dns / tcp / udp)
 
@@ -295,7 +308,20 @@ Scripts with `match` / `evidence` must include `name "…"` or `report "…"` or
 
 ## Duration literals
 
-Suffix `ms` or `s`: `200ms`, `30s`, `1s`. Used in `timeout`, `read_idle`, `sleep`, `retry_delay`, and comparisons.
+Supported suffixes — `ms`, `s`, `m`, `h`, `d`:
+
+| Literal | Meaning |
+|---------|---------|
+| `200ms` | 200 milliseconds |
+| `30s`   | 30 seconds |
+| `5m`    | 5 minutes |
+| `1h`    | 1 hour |
+| `1d`    | 1 day |
+
+Used in `timeout`, `read_idle`, `sleep`, `retry_delay`, and comparisons.
+Earlier revisions accepted only `ms` and `s`; `m` / `h` / `d` were added
+so long-running auth flows and scheduled retries no longer need to be
+written as awkward second counts.
 
 ## Common footguns
 
