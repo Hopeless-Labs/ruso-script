@@ -47,6 +47,7 @@ kw_cvss_score = @{ C_ ~ V ~ S ~ S ~ "_" ~ S ~ C_ ~ O ~ R ~ E }
 kw_mitigation = @{ M ~ I ~ T ~ I ~ G ~ A ~ T ~ I ~ O ~ N }
 kw_tags = @{ T ~ A ~ G ~ S }
 kw_version = @{ V ~ E ~ R ~ S ~ I ~ O ~ N }
+kw_family = @{ F ~ A ~ M ~ I ~ L ~ Y }
 kw_metadata = @{ M ~ E ~ T ~ A ~ D ~ A ~ T ~ A }
 kw_evidence = @{ E ~ V ~ I ~ D ~ E ~ N ~ C_ ~ E }
 kw_report = @{ R ~ E ~ P ~ O ~ R ~ T }
@@ -302,6 +303,7 @@ metadata_stmt = {
     | kw_mitigation ~ string
     | kw_tags ~ list_lit
     | kw_version ~ string
+    | kw_family ~ string
 }
 
 metadata_block = { kw_metadata ~ l_brace ~ (pad? ~ metadata_stmt)* ~ pad? ~ r_brace }

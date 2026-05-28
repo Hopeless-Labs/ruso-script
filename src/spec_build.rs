@@ -28,6 +28,8 @@ pub fn build_program_spec(statements: &[Stmt]) -> ProgramSpec {
             // emits one Stmt::Version per declaration so we let the
             // final value land deterministically.
             Stmt::Version(value) => spec.metadata.version = Some(value.clone()),
+            // Single-value, last-wins (same rationale as version).
+            Stmt::Family(value) => spec.metadata.family = Some(value.clone()),
             Stmt::Http { name, items } => {
                 spec.probes
                     .insert(name.clone(), ProbeKind::Http(http_spec(items)));

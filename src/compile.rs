@@ -314,6 +314,7 @@ impl Compiler {
             | Stmt::Mitigation(_)
             | Stmt::Tag(_)
             | Stmt::Version(_)
+            | Stmt::Family(_)
             | Stmt::Http { .. }
             | Stmt::Dns(_)
             | Stmt::Tcp(_)

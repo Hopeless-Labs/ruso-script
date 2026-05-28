@@ -50,6 +50,7 @@ pub enum Stmt {
     Mitigation(String),
     Tag(String),
     Version(String),
+    Family(String),
 
     Set {
         name: String,
@@ -132,6 +133,7 @@ impl Stmt {
                 | Self::Mitigation(_)
                 | Self::Tag(_)
                 | Self::Version(_)
+                | Self::Family(_)
         )
     }
 
