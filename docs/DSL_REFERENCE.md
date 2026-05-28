@@ -22,6 +22,7 @@ metadata {
     cvss "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
     mitigation "Apply security patch"
     tags ["auth", "rce", "log4j"]
+    family "web"
     version "1.2.3"
 }
 
@@ -57,9 +58,12 @@ All finding metadata lives in a single `metadata { … }` block at the top of th
 | `cvss_score` | `cvss_score 9.8` numeric score literal (repeat to list multiple) |
 | `mitigation` | `mitigation "…"` remediation text (repeat to list multiple) |
 | `tags` | `tags ["auth", "rce", "log4j"]` free-form discovery labels |
+| `family` | `family "web"` single curated category (see below) |
 | `version` | `version "1.2.3"` SemVer string; required at publish time, optional for local validate/compile |
 
 `cve`, `cwe`, `references`, and `tags` stay stored as `Vec<String>` in metadata, findings, and reports. Use `cvss` for vectors and `cvss_score` for scores (e.g. base + temporal). Tags are unconstrained at the DSL level — downstream registries are free to enforce their own slug rules and per-script caps at publish time. `version` is a single optional string; repeated declarations take the last value. The registry rejects publishes without it.
+
+`family` vs `tags`: `tags` are many-per-script, free-form discovery labels; `family` is a **single** structural category for "scan everything in this group" selection (à la Nessus/OpenVAS plugin families). The DSL accepts any string and stores the last-declared value; the **registry** enforces a curated set at publish time (currently `auth`, `cloud`, `database`, `dns`, `mail`, `misc`, `network`, `tls`, `web`) and rejects anything outside it. `family` is optional — omit it for uncategorised scripts.
 
 ## Variables
 
