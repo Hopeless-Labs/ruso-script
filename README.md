@@ -51,8 +51,8 @@ docs/                 # documentation
 
 ```bash
 # Install ruso-cli from https://github.com/Hopeless-Labs/ruso-cli
-ruso parse --script examples/http_health.ruso
-ruso scan --script examples/http_health.ruso --target https://example.com
+ruso validate --script examples/http_status_ok.ruso
+ruso scan --script examples/http_status_ok.ruso --target http://127.0.0.1:8080
 ```
 
 ## License

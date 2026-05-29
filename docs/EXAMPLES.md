@@ -1,147 +1,80 @@
 # Example scripts
 
-Scripts live in [`examples/`](../examples/) in the **ruso-script** repository.
+Scripts live in [`examples/`](../examples/) in the **ruso-script** repository:
+two runnable checks per protocol (HTTP, DNS, TCP, UDP). Every example has been
+verified against a local Docker target.
 
-Install or build [ruso-cli](https://github.com/Hopeless-Labs/ruso-cli), then from a clone of **ruso-script**:
-
-```bash
-ruso parse --script examples/<file>.ruso
-ruso scan --script examples/http_health.ruso --target https://example.com
-```
-
-Or build the CLI from a sibling clone:
+Install or build [ruso-cli](https://github.com/Hopeless-Labs/ruso-cli), then
+from a clone of **ruso-script**:
 
 ```bash
-cd ../ruso-cli && cargo build --release
-../ruso-cli/target/release/ruso parse --script ../ruso-script/examples/http_health.ruso
+ruso validate --script examples/http_status_ok.ruso          # syntax + compile, no network
+ruso scan --script examples/http_status_ok.ruso --target http://127.0.0.1:8080
 ```
 
-## `http_health.ruso`
+Socket examples (`dns`/`tcp`/`udp`) take the host from `--target` via
+`{{scan_host}}`; the port is the literal in the probe block. HTTP examples use
+`--target` as the base URL.
 
-**Purpose:** Minimal HTTP GET health check.
+## HTTP
 
-**Concepts:** `http` probe, `send`, `match` on `status` and `body`.
+### `http_status_ok.ruso`
+**Purpose:** Endpoint availability + content check.
+**Concepts:** `http` probe, `send`, `match` on `status` / `body` / `header`, `evidence`.
+**Run:** `ruso scan --script examples/http_status_ok.ruso --target http://127.0.0.1:8080`
 
-**Metadata:** `references [...]` only (info/demo check).
+### `http_server_version_disclosure.ruso`
+**Purpose:** Flag a `Server` header that leaks the product version (info disclosure).
+**Concepts:** `HEAD` request, `match … header "Server" regex 'nginx/[0-9]+\.[0-9]+'`.
+**Note:** Detects `nginx/1.31.1`; stays quiet when `server_tokens off` yields a bare `nginx`.
 
-**Run:**
+## DNS (wire mode over UDP)
 
-```bash
-ruso scan --script examples/http_health.ruso --target https://example.com
-```
+### `dns_wire_a.ruso`
+**Purpose:** Raw A query, confirm the server answers.
+**Concepts:** `dns` with `host` / `port 53` / hex `payload bytes`; `match wire_a.response contains "ruso"` (the queried labels echo back in the response).
 
-Requires a reachable HTTPS target; adjust matchers to match the real response.
+### `dns_wire_txt.ruso`
+**Purpose:** Read a TXT record's plaintext value (TXT often carries tokens/secrets).
+**Concepts:** Same shape as `dns_wire_a` with QTYPE TXT; `match … contains "ruso-dns-ok"` (TXT rdata is ASCII).
 
----
+## TCP
 
-## `dns_resolve.ruso`
+### `tcp_redis_unauth.ruso`
+**Purpose:** Detect unauthenticated Redis via RESP `PING` → `PONG`.
+**Concepts:** `payload bytes "<hex>"` for the RESP `*1\r\n$4\r\nPING\r\n` frame (text payloads are sent verbatim, so control bytes must be hex), `read_idle`, `match … contains "PONG"` + `not_contains "NOAUTH"`, `evidence`.
 
-**Purpose:** OS resolver mode (DNS probe with **only** `host`).
+### `tcp_http_banner.ruso`
+**Purpose:** Banner-grab a text protocol over a raw TCP socket.
+**Concepts:** `tcp` probe sending a hex-encoded `HEAD / HTTP/1.0` request, `match … contains "HTTP/1."` and `"Server:"`.
 
-**Concepts:** `dns` without `port`/`payload`, `match lookup.answer`.
+## UDP
 
-**Metadata:** `references [...]` (resolver-mode demo).
+### `udp_ntp.ruso`
+**Purpose:** Confirm an NTP daemon replies (reflection/amplification exposure class).
+**Concepts:** `udp` + `port 123` + a 48-byte client packet (`payload bytes "1b00…"`), `match ntp.response regex '^\x1c'` (server-mode reply byte).
 
-**Run:** `--target` is unused for resolution; host is `one.one.one.one` in the script.
-
----
-
-## `dns_wire_a.ruso`
-
-**Purpose:** Wire-format DNS A query over UDP.
-
-**Concepts:**
-
-- `host` + `port 53` + hex `payload`  
-- Binary DNS packet (query for `example.com`)  
-- `match wire_a.response regex '.+'` (non-empty reply)
-
-**Metadata:** `cwe [...]`, `references [...]` (wire-format demo).
-
-**Run:** Needs UDP/53 reachability to `1.1.1.1` (or change `host`).
-
----
-
-## `tcp_ssh_banner.ruso`
-
-**Purpose:** TCP banner grab without sending data.
-
-**Concepts:**
-
-- `tcp` with `host` + `port 22`, no `payload`  
-- SSH sends banner on connect  
-- `match ssh_banner.response contains "SSH"`
-
-**Metadata:** `cwe [...]`, `cvss_score`, `references [...]` (banner disclosure / fingerprinting).
-
-**Run:** Example uses `scanme.nmap.org:22`; use only on systems you are allowed to scan.
-
----
-
-## `tcp_redis_unauth.ruso`
-
-**Purpose:** Detect unauthenticated Redis via RESP `PING`.
-
-**Concepts:**
-
-- Text `payload` with RESP encoding  
-- `match redis_ping.response contains "PONG"`  
-- `evidence redis_ping regex 'PONG'`
-
-**Metadata:** advisory block with `cve [...]`, `cwe [...]`, `cvss`, `cvss_score`, `references [...]`, `mitigation`.
-
-**Run:** Uses `host "{{scan_host}}"` from `--target`. Example: `ruso scan --script examples/tcp_redis_unauth.ruso --target http://127.0.0.1:6379` (port 6379 is still from the probe block).
-
----
-
-## `udp_ntp.ruso`
-
-**Purpose:** UDP probe shape (same fields as `tcp`/`dns` wire).
-
-**Concepts:**
-
-- `udp` + `port 123` + 48 zero bytes (NTP client request)  
-- `pool.ntp.org` as example host
-
-**Metadata:** `cve [...]`, `cwe [...]`, `cvss`, `cvss_score`, `references [...]`, `mitigation` (NTP amplification class).
-
-**Run:** May timeout on firewalled networks; validates UDP send/receive path.
-
----
-
-## `tcp_session_loop.ruso`
-
-**Purpose:** Stateful TCP + list-driven loop.
-
-**Concepts:**
-
-- `session true` — reuse connection  
-- `read_idle 200ms` — aggregate multi-packet reads  
-- `set attempts ["first", "second"]` + `for attempt in attempts` — iterate from a list variable  
-
-**Metadata:** `cwe [...]`, `cvss_score`, `references [...]`, `mitigation` (session reuse on unauthenticated Redis).
-
-**Run:** Requires Redis on `127.0.0.1:6379` (same as redis example).
-
----
+### `udp_echo.ruso`
+**Purpose:** Generic UDP request/response.
+**Concepts:** Text `payload`, `match echo.response contains "RUSO-PING"`.
 
 ## Mapping examples to scanner patterns
 
 | Pattern | Example |
 |---------|---------|
-| Web VA | `http_health.ruso` |
-| Service fingerprint / banner | `tcp_ssh_banner.ruso` |
+| Web availability / content | `http_status_ok.ruso` |
+| Header / version disclosure | `http_server_version_disclosure.ruso` |
+| DNS recon (wire) | `dns_wire_a.ruso`, `dns_wire_txt.ruso` |
 | Cleartext protocol test | `tcp_redis_unauth.ruso` |
-| DNS recon | `dns_resolve.ruso` |
-| Custom UDP / binary | `udp_ntp.ruso`, `dns_wire_a.ruso` |
-| Multi-step socket | `tcp_session_loop.ruso` |
+| Service fingerprint / banner | `tcp_http_banner.ruso` |
+| UDP service probe | `udp_ntp.ruso`, `udp_echo.ruso` |
 
 ## Writing your own
 
-1. Copy the closest example.  
-2. Change metadata for your finding (`name`, `severity`, `cve [...]`, `cwe [...]`, `references [...]`, `cvss`, `cvss_score`, `mitigation`, …).  
-3. Adjust `host`/`port`/`payload` or HTTP `path`.  
-4. Tighten matchers to reduce false positives.  
-5. Add `evidence` for report body.
+1. Copy the closest example.
+2. Change metadata for your finding (`name`, `severity`, `cve [...]`, `cwe [...]`, `references [...]`, `cvss`, `cvss_score`, a single `mitigation`, …).
+3. Adjust `host`/`port`/`payload` (use `payload bytes "<hex>"` for control/binary bytes) or the HTTP `path`.
+4. Tighten matchers to reduce false positives.
+5. Add `evidence` for the report body.
 
 See [DSL reference](DSL_REFERENCE.md) for full syntax.

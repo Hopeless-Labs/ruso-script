@@ -21,7 +21,7 @@ let bytecode = compile(&program);
 
 ```bash
 # With ruso-cli installed (from ruso-cli repo)
-ruso parse --script examples/http_health.ruso
+ruso validate --script examples/http_status_ok.ruso
 ```
 
 ## Dependency
