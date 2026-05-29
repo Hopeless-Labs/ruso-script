@@ -87,6 +87,20 @@ patch end_pc = code.len();
 | `parser/statements.rs` | send, repeat, if, flow, … |
 | `parser/body.rs` | HTTP body objects |
 
+### Nesting-depth guard
+
+`pest` is a recursive-descent parser, so each nested block (`if` / `for` /
+`repeat` … `end`) or object (`{ … }`) costs one parser stack frame. A few
+thousand levels — well under the backend's 256 KiB source cap — overflow
+the stack and **abort the process** (a stack overflow can't be caught by
+`catch_unwind` and isn't bounded by the executor's wall-clock budget).
+`parse()` therefore runs `check_nesting_depth` before handing the source
+to pest: a single linear, string-/comment-aware scan that rejects input
+nesting deeper than `MAX_NESTING_DEPTH` (64) with a graceful
+`ParseError::Invalid`. The counter tracks simultaneously-open constructs,
+which equals pest's recursion depth, so it can't be evaded by interleaving
+brace and keyword nesting.
+
 ### Adding a socket option
 
 1. Add keyword to `grammar.pest` (`socket_item` arm).  
