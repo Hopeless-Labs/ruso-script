@@ -1,0 +1,26 @@
+metadata {
+    name "DNS TXT record content exposure"
+    description "Query the TXT record for app.ruso.test over wire DNS and read its plaintext value"
+    impact "TXT records often carry SPF/DKIM, verification tokens, or stray secrets readable by anyone"
+    severity low
+    author "ruso-lab"
+    cwe ["CWE-200"]
+    cvss_score 3.7
+    references ["https://www.rfc-editor.org/rfc/rfc1035"]
+    mitigation "Audit TXT records and remove tokens/secrets that don't need to be public"
+}
+
+# Same question name as dns_wire_a but QTYPE TXT (0010). TXT rdata is ASCII,
+# so the configured value appears verbatim in the answer section.
+dns wire_txt {
+    host "{{scan_host}}"
+    port 53
+    payload bytes "aaaa0100000100000000000003617070047275736f04746573740000100001"
+}
+
+send wire_txt
+
+# Socket fields are `.response` / `.banner`; `.response_size` is HTTP-only.
+match wire_txt.response contains "ruso-dns-ok"
+
+evidence wire_txt regex 'ruso-dns-ok'

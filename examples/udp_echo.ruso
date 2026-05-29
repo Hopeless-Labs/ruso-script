@@ -1,0 +1,22 @@
+metadata {
+    name "UDP echo service request/response"
+    description "Send a text datagram to a UDP service and confirm the same bytes come back"
+    impact "Demonstrates a text-payload udp probe and matching on the returned datagram contents"
+    severity info
+    author "ruso-lab"
+    references ["https://github.com/Hopeless-Labs/ruso-script/tree/main/examples"]
+}
+
+# Text payloads ride as raw UTF-8 bytes; use `payload bytes "<hex>"` for binary.
+udp echo {
+    host "{{scan_host}}"
+    port 9999
+    read_idle 300ms
+    payload "RUSO-PING"
+}
+
+send echo
+
+match echo.response contains "RUSO-PING"
+
+evidence echo regex 'RUSO-PING'

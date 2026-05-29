@@ -1,0 +1,27 @@
+metadata {
+    name "HTTP server banner grab over raw TCP"
+    description "Open a raw TCP socket to port 80, send a minimal HEAD request, and read the server banner"
+    impact "Shows tcp probing of a text protocol: send a request line, match the status line and Server header"
+    severity info
+    author "ruso-lab"
+    cwe ["CWE-200"]
+    references ["https://github.com/Hopeless-Labs/ruso-script/tree/main/examples"]
+}
+
+# Unlike the `http` block, this speaks the protocol by hand over a TCP socket —
+# useful when you want the raw wire bytes rather than a parsed HTTP response.
+# `HEAD / HTTP/1.0\r\nHost: ruso-target\r\n\r\n` as hex — text payloads are sent
+# verbatim, so the CRLFs that terminate the request must go through `payload bytes`.
+tcp http_banner {
+    host "{{scan_host}}"
+    port 80
+    read_idle 300ms
+    payload bytes "48454144202f20485454502f312e300d0a486f73743a207275736f2d7461726765740d0a0d0a"
+}
+
+send http_banner
+
+match http_banner.response contains "HTTP/1."
+match http_banner.response contains "Server:"
+
+evidence http_banner regex 'Server:[^\r\n]+'

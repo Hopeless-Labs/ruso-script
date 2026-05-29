@@ -1,7 +1,7 @@
 metadata {
-    name "UDP NTP mode request"
-    description "Generic udp probe: host, port, optional payload (48 zero bytes = NTP client request)"
-    impact "Same block shape as dns/tcp — swap keyword only"
+    name "NTP service responds to client request (UDP)"
+    description "Send a 48-byte NTP v3 client packet to UDP/123 and confirm the daemon replies"
+    impact "An openly reachable NTP daemon can be abused for reflection/amplification DDoS (e.g. monlist)"
     severity medium
     author "ruso-lab"
     cve ["CVE-2013-5211"]
@@ -9,15 +9,19 @@ metadata {
     cvss_score 7.5
     cvss "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
     references ["https://nvd.nist.gov/vuln/detail/CVE-2013-5211"]
-    mitigation "Disable NTP monlist and restrict NTP to trusted clients"
+    mitigation "Disable the monlist query, restrict NTP to trusted clients, and rate-limit UDP/123"
 }
 
+# First byte 0x1b = LI 0, VN 3, Mode 3 (client); remaining 47 bytes zero.
 udp ntp {
-    host "pool.ntp.org"
+    host "{{scan_host}}"
     port 123
-    payload bytes "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    payload bytes "1b0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 }
 
 send ntp
 
-match ntp.response_size > 0
+# A reply means the daemon is reachable. The first byte of a server packet is
+# 0x1c (LI 0, VN 3, Mode 4); `\x1c` anchored at the start confirms an NTP reply.
+# (Socket fields are `.response` / `.banner`; `.response_size` is HTTP-only.)
+match ntp.response regex '^\x1c'

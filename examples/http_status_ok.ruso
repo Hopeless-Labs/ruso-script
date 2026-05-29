@@ -1,0 +1,25 @@
+metadata {
+    name "HTTP endpoint availability + content check"
+    description "GET the target root, assert 200 and that the expected page marker is served"
+    impact "Demonstrates http / send / match / evidence: status, body, and header predicates"
+    severity info
+    author "ruso-lab"
+    references ["https://github.com/Hopeless-Labs/ruso-script/tree/main/examples"]
+}
+
+# Path is relative to --target (the scan base URL).
+http home {
+    method GET
+    path "/"
+    timeout 5s
+    follow_redirect false
+    header "Accept" "text/html"
+}
+
+send home
+
+match home.status == 200
+match home.body contains "RUSO-HTTP-OK"
+match home.header "Content-Type" contains "text/html"
+
+evidence home.body

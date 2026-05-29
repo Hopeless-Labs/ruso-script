@@ -1,0 +1,24 @@
+metadata {
+    name "HTTP Server header version disclosure"
+    description "The Server response header leaks the exact web-server product and version"
+    impact "Version banners let attackers map the target to known CVEs and tailor exploits"
+    severity low
+    author "ruso-lab"
+    cwe ["CWE-200"]
+    cvss_score 5.3
+    cvss "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+    references ["https://owasp.org/www-project-web-security-testing-guide/"]
+    mitigation "Set `server_tokens off;` (nginx) or `ServerTokens Prod` (Apache) to suppress the version"
+}
+
+http banner {
+    method HEAD
+    path "/"
+    timeout 5s
+}
+
+send banner
+
+# `server_tokens off` yields a bare "nginx"; a "nginx/<version>" value is the leak.
+# (Header matchers support contains / not_contains, not regex.)
+match banner.header "Server" contains "nginx/"

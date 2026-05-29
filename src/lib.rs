@@ -111,14 +111,14 @@ mod tests {
 
     #[test]
     fn load_program_valid_example() {
-        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("examples/http_health.ruso");
+        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("examples/http_status_ok.ruso");
         let program = load_program(&path).expect("example script should parse");
         assert!(!program.statements.is_empty());
     }
 
     #[test]
     fn bytecode_roundtrip_http_example() {
-        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("examples/http_health.ruso");
+        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("examples/http_status_ok.ruso");
         let program = load_program(&path).unwrap();
         let original = compile_program(&program).unwrap();
         let bytes = encode_bytecode(&original);

@@ -17,10 +17,14 @@ metadata {
 }
 
 # Host comes from CLI --target via {{scan_host}} (see DSL "Scan target variables").
+# RESP `*1\r\n$4\r\nPING\r\n` as hex — text payloads are sent verbatim, so control
+# bytes (CRLF) must go through `payload bytes`, not a "\r\n" escape in a string.
+# read_idle lets the read return once Redis has sent +PONG and gone quiet.
 tcp redis_ping {
     host "{{scan_host}}"
     port 6379
-    payload "*1\r\n$4\r\nPING\r\n"
+    read_idle 300ms
+    payload bytes "2a310d0a24340d0a50494e470d0a"
 }
 
 send redis_ping
