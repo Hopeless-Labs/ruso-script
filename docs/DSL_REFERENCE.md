@@ -56,7 +56,7 @@ All finding metadata lives in a single `metadata { … }` block at the top of th
 | `references` | `references ["https://…", "https://…"]` |
 | `cvss` | `cvss "CVSS:3.1/…"` full vector string (repeat to list multiple) |
 | `cvss_score` | `cvss_score 9.8` numeric score literal (repeat to list multiple) |
-| `mitigation` | `mitigation "…"` remediation text (repeat to list multiple) |
+| `mitigation` | `mitigation "…"` single free-text remediation note (declaring it more than once is a compile error) |
 | `tags` | `tags ["auth", "rce", "log4j"]` free-form discovery labels |
 | `family` | `family "web"` single curated category (see below) |
 | `version` | `version "1.2.3"` SemVer string; required at publish time, optional for local validate/compile |
