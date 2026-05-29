@@ -15,9 +15,23 @@ pub enum CompileError {
         "script has match/evidence logic but no `name` or `report` metadata for the finding title"
     )]
     MissingFindingTitle,
+    #[error("`mitigation` may appear at most once; it is a single free-text field, not a list")]
+    DuplicateMitigation,
 }
 
 pub fn compile(program: &Program) -> Result<BytecodeProgram, CompileError> {
+    // `mitigation` is a single free-text field (unlike cve/cwe/references/tags,
+    // which accumulate). Reject a script that declares it more than once rather
+    // than silently keeping the last one.
+    if program
+        .statements
+        .iter()
+        .filter(|s| matches!(s, Stmt::Mitigation(_)))
+        .count()
+        > 1
+    {
+        return Err(CompileError::DuplicateMitigation);
+    }
     let spec = build_program_spec(&program.statements);
     validate_finding_metadata(&spec.metadata, &program.statements)?;
     let mut compiler = Compiler::new(spec);
@@ -389,5 +403,31 @@ mod tests {
             compile(&program),
             Err(CompileError::MissingFindingTitle)
         ));
+    }
+
+    #[test]
+    fn compile_rejects_duplicate_mitigation() {
+        let program = Program {
+            statements: vec![
+                Stmt::Name("Dup".into()),
+                Stmt::Mitigation("first".into()),
+                Stmt::Mitigation("second".into()),
+            ],
+        };
+        assert!(matches!(
+            compile(&program),
+            Err(CompileError::DuplicateMitigation)
+        ));
+    }
+
+    #[test]
+    fn compile_accepts_single_mitigation() {
+        let program = Program {
+            statements: vec![
+                Stmt::Name("Single".into()),
+                Stmt::Mitigation("patch it".into()),
+            ],
+        };
+        assert!(compile(&program).is_ok());
     }
 }

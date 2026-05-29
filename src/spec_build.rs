@@ -21,7 +21,10 @@ pub fn build_program_spec(statements: &[Stmt]) -> ProgramSpec {
             Stmt::Reference(value) => spec.metadata.references.push(value.clone()),
             Stmt::Cvss(value) => spec.metadata.cvss.push(value.clone()),
             Stmt::CvssScore(value) => spec.metadata.cvss_score.push(value.clone()),
-            Stmt::Mitigation(value) => spec.metadata.mitigation.push(value.clone()),
+            // Single field, last-wins on assignment. `compile()` rejects
+            // scripts that declare `mitigation` more than once before we get
+            // here, so in practice this only ever runs zero or one time.
+            Stmt::Mitigation(value) => spec.metadata.mitigation = Some(value.clone()),
             Stmt::Tag(value) => spec.metadata.tags.push(value.clone()),
             // Last-wins for repeated version declarations. Compile-time
             // policy could reject duplicates, but the parser already
@@ -128,8 +131,7 @@ mod tests {
             Stmt::Cvss("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H".into()),
             Stmt::CvssScore("9.8".into()),
             Stmt::CvssScore("7.5".into()),
-            Stmt::Mitigation("Patch the service".into()),
-            Stmt::Mitigation("Restrict network access".into()),
+            Stmt::Mitigation("Patch the service and restrict network access".into()),
             Stmt::Tag("auth".into()),
             Stmt::Tag("rce".into()),
         ];
@@ -146,8 +148,8 @@ mod tests {
         );
         assert_eq!(spec.metadata.cvss_score, vec!["9.8", "7.5"]);
         assert_eq!(
-            spec.metadata.mitigation,
-            vec!["Patch the service", "Restrict network access"]
+            spec.metadata.mitigation.as_deref(),
+            Some("Patch the service and restrict network access")
         );
         assert_eq!(spec.metadata.tags, vec!["auth", "rce"]);
     }
