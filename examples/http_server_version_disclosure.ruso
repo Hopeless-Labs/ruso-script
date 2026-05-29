@@ -20,5 +20,4 @@ http banner {
 send banner
 
 # `server_tokens off` yields a bare "nginx"; a "nginx/<version>" value is the leak.
-# (Header matchers support contains / not_contains, not regex.)
-match banner.header "Server" contains "nginx/"
+match banner.header "Server" regex 'nginx/[0-9]+\.[0-9]+'
