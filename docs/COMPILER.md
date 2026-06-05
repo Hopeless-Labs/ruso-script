@@ -80,8 +80,8 @@ patch else_pc = code.len();
 
 ### Nesting-depth guard
 
-`pest` is a recursive-descent parser, so each nested block (`if` / `for` /
-`repeat` … `end`) or object (`{ … }`) costs one parser stack frame. A few
+`pest` is a recursive-descent parser, so each nested block (`if` / `for`
+… `end`) or object (`{ … }`) costs one parser stack frame. A few
 thousand levels — well under the backend's 256 KiB source cap — overflow
 the stack and **abort the process** (a stack overflow can't be caught by
 `catch_unwind` and isn't bounded by the executor's wall-clock budget).
