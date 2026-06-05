@@ -65,15 +65,6 @@ emit_program(body);
 patch else_pc = code.len();
 ```
 
-**`repeat`**
-
-```rust
-let repeat_pc = emit(Repeat { count, end_pc: 0 });
-emit_program(body);
-emit(LoopBack);
-patch end_pc = code.len();
-```
-
 ## Parser layout
 
 | Module | Responsibility |
@@ -84,7 +75,7 @@ patch end_pc = code.len();
 | `parser/probes.rs` | `http` block items |
 | `parser/socket.rs` | `dns` / `tcp` / `udp` shared builder |
 | `parser/match_expr.rs` | qualified matchers, groups |
-| `parser/statements.rs` | send, repeat, if, flow, … |
+| `parser/statements.rs` | send, if, for, flow, … (`repeat` kept only to reject with a migration error) |
 | `parser/body.rs` | HTTP body objects |
 
 ### Nesting-depth guard
@@ -134,7 +125,6 @@ pub struct SocketProbe {
 
 pub enum Stmt {
     Send { probe: String, payload: Option<Vec<u8>> },
-    Repeat { count: u32, body: Vec<Stmt> },
     Break,
     // …
 }

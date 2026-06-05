@@ -1,6 +1,6 @@
 # Ruso DSL reference
 
-Scripts use the `.ruso` extension. Syntax is line-oriented statements; blocks use `keyword name { … }` with `end` closing `if`, `match all`, `match any`, `repeat`, and `for`.
+Scripts use the `.ruso` extension. Syntax is line-oriented statements; blocks use `keyword name { … }` with `end` closing `if`, `match all`, `match any`, and `for`.
 
 Keywords are **case-insensitive** (`HTTP`, `http`, `Send` are equivalent).
 
@@ -245,25 +245,23 @@ Compiled to `IfMatch` — skips body when chain already failed or condition fals
 ## Loops
 
 ```ruso
-repeat 3
+for host in ["a.example", "b.example"]
+    set current_host "{{ host }}"
     send dialog
     match dialog.response contains "PONG"
     break
 end
-
-for host in ["a.example", "b.example"]
-    set current_host "{{ host }}"
-    send dialog
-end
 ```
 
-- `repeat N` — body runs N times (`LoopBack` decrements counter).
 - `for item in ["a", "b"]` — iterate a literal string list.
 - `for item in hosts` — iterate a list variable created by `set hosts ["a", "b"]`.
 - `break` — jump to instruction after the loop.
-- `continue` — skip to the next iteration of the current `repeat` / `for`.
+- `continue` — skip to the next iteration of the current `for`.
 
-There is still no `while`; looping is `repeat N` or `for item in <list>`.
+There is no `while`; looping is `for item in <list>`. The old fixed-count
+`repeat N … end` was **removed** — use `for` to iterate, or `retry <probe> <n>`
+to re-send a probe. A script that still uses `repeat` is rejected at compile
+time with that hint.
 
 ## Extract and save
 
@@ -302,6 +300,15 @@ retry_delay 2s
 retry home 3
 sleep 1s
 ```
+
+`retry home 3` re-sends a probe up to N times, stopping on the first success,
+waiting `retry_delay` between attempts — author-controlled re-send logic.
+
+This is distinct from the runtime's **automatic transport retry** (the CLI
+`--retries`, default 2), which transparently re-tries a probe that fails with a
+*transient connection error* (reset, connect/read timeout). The two do not
+stack: a probe driven by a `retry` directive opts out of the automatic transport
+retry, so the script's count is the sole authority for that probe.
 
 ## Flow control
 

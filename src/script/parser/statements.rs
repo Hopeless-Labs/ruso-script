@@ -57,17 +57,15 @@ pub(crate) fn build_if(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
     Ok(Stmt::If { condition, body })
 }
 
-pub(crate) fn build_repeat(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
-    let mut inner = pair.into_inner();
-    let count = inner
-        .find(|p| p.as_rule() == Rule::number)
-        .and_then(|p| p.as_str().parse().ok())
-        .unwrap_or(0);
-    let mut body = Vec::new();
-    for item in inner.filter(|p| p.as_rule() == Rule::statement) {
-        body.extend(super::build_statement(item)?);
-    }
-    Ok(Stmt::Repeat { count, body })
+/// `repeat … end` was removed from the DSL. The grammar still recognises it so
+/// an old script gets this actionable migration error instead of a cryptic
+/// "unexpected token".
+pub(crate) fn build_repeat(_pair: Pair<Rule>) -> Result<Stmt, ParseError> {
+    Err(ParseError::Invalid(
+        "`repeat … end` is no longer supported; use `for <var> in [...]` to iterate \
+         or `retry <probe> <n>` to re-send a probe"
+            .to_string(),
+    ))
 }
 
 pub(crate) fn build_for(pair: Pair<Rule>) -> Result<Stmt, ParseError> {

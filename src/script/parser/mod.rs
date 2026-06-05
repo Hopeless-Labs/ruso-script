@@ -260,8 +260,8 @@ mod nesting_tests {
                 json { "iframe": "{{ endpoint }}" }
             }
             if probe.status == 200
-                repeat 2
-                    match probe.body contains "ok"
+                for marker in ["ok", "yes"]
+                    match probe.body contains "{{ marker }}"
                 end
             end
         "#;
@@ -276,5 +276,17 @@ mod nesting_tests {
             set r '}}}}}}{{{{{{'
         "#;
         assert!(check_nesting_depth(src).is_ok());
+    }
+
+    #[test]
+    fn repeat_is_rejected_with_a_migration_hint() {
+        let src = r#"
+            repeat 2
+                sleep 1s
+            end
+        "#;
+        let message = parse(src).expect_err("repeat must be rejected").to_string();
+        assert!(message.contains("repeat"), "got: {message}");
+        assert!(message.contains("no longer supported"), "got: {message}");
     }
 }

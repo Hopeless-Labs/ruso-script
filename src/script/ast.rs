@@ -74,10 +74,6 @@ pub enum Stmt {
         probe: String,
         payload: Option<Vec<u8>>,
     },
-    Repeat {
-        count: u32,
-        body: Vec<Stmt>,
-    },
     Break,
 
     Match(QualifiedMatch),

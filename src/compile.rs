@@ -60,9 +60,7 @@ fn needs_finding_title(stmt: &Stmt) -> bool {
         | Stmt::Assert(_)
         | Stmt::Evidence(_) => true,
         Stmt::If { body, .. } => body.iter().any(needs_finding_title),
-        Stmt::Repeat { body, .. } | Stmt::ForIn { body, .. } => {
-            body.iter().any(needs_finding_title)
-        }
+        Stmt::ForIn { body, .. } => body.iter().any(needs_finding_title),
         _ => false,
     }
 }
@@ -223,19 +221,6 @@ impl Compiler {
                 self.emit_program(body);
                 let else_pc = self.code.len() as u32;
                 self.code[if_pc] = Instr::IfMatch { matcher, else_pc };
-            }
-            Stmt::Repeat { count, body } => {
-                let repeat_pc = self.emit(Instr::Repeat {
-                    count: *count,
-                    end_pc: 0,
-                });
-                self.emit_program(body);
-                self.emit(Instr::LoopBack);
-                let end_pc = self.code.len() as u32;
-                self.code[repeat_pc] = Instr::Repeat {
-                    count: *count,
-                    end_pc,
-                };
             }
             Stmt::ForIn { item, list, body } => {
                 let item = self.str_id(item);
