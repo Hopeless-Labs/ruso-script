@@ -259,9 +259,9 @@ end
 - `continue` — skip to the next iteration of the current `for`.
 
 There is no `while`; looping is `for item in <list>`. The old fixed-count
-`repeat N … end` was **removed** — use `for` to iterate, or `retry <probe> <n>`
-to re-send a probe. A script that still uses `repeat` is rejected at compile
-time with that hint.
+`repeat N … end` was **removed** from the grammar and the VM — use `for` to
+iterate, or `retry <probe> <n>` to re-send a probe. `repeat` is no longer valid
+syntax and fails to parse.
 
 ## Extract and save
 

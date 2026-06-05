@@ -28,7 +28,7 @@ pub enum ParseError {
 /// Maximum structural nesting depth accepted before parsing.
 ///
 /// `pest` is a recursive-descent (PEG) parser, so each nested block
-/// (`if`/`for`/`repeat` … `end`) or object (`{ … }`) costs one parser
+/// (`if`/`for` … `end`) or object (`{ … }`) costs one parser
 /// stack frame. A few thousand levels — comfortably under the backend's
 /// 256 KiB source cap — overflow the stack and **abort the process**. A
 /// stack overflow cannot be caught by `catch_unwind` and is not bounded
@@ -41,7 +41,7 @@ const MAX_NESTING_DEPTH: usize = 64;
 /// Conservative pre-parse guard: bound the simultaneous nesting depth.
 ///
 /// At the point of pest's deepest recursion, every still-open construct is
-/// either a brace pair (`{`…`}`) or a block keyword (`if`/`for`/`repeat`
+/// either a brace pair (`{`…`}`) or a block keyword (`if`/`for`
 /// closed by `end`). Counting openers minus closers therefore tracks the
 /// parser's stack depth exactly, so this can't be evaded by interleaving
 /// the two forms. String (`"…"`) and regex (`'…'`) literals and `#`
@@ -102,10 +102,7 @@ fn check_nesting_depth(source: &str) -> Result<(), ParseError> {
                     i += 1;
                 }
                 let word = &source[start..i];
-                if word.eq_ignore_ascii_case("if")
-                    || word.eq_ignore_ascii_case("for")
-                    || word.eq_ignore_ascii_case("repeat")
-                {
+                if word.eq_ignore_ascii_case("if") || word.eq_ignore_ascii_case("for") {
                     depth += 1;
                     if depth > MAX_NESTING_DEPTH {
                         return Err(too_deep());
@@ -190,7 +187,6 @@ pub(crate) fn build_statement(pair: Pair<Rule>) -> Result<Vec<Stmt>, ParseError>
         }
         Rule::extract_stmt => vec![statements::build_extract(inner)?],
         Rule::if_block => vec![statements::build_if(inner)?],
-        Rule::repeat_block => vec![statements::build_repeat(inner)?],
         Rule::for_block => vec![statements::build_for(inner)?],
         Rule::save_stmt => vec![statements::build_save(inner)?],
         Rule::evidence_stmt => vec![statements::build_evidence(inner)?],
@@ -279,14 +275,13 @@ mod nesting_tests {
     }
 
     #[test]
-    fn repeat_is_rejected_with_a_migration_hint() {
+    fn repeat_is_no_longer_valid_syntax() {
+        // `repeat` was removed from the grammar entirely; it no longer parses.
         let src = r#"
             repeat 2
                 sleep 1s
             end
         "#;
-        let message = parse(src).expect_err("repeat must be rejected").to_string();
-        assert!(message.contains("repeat"), "got: {message}");
-        assert!(message.contains("no longer supported"), "got: {message}");
+        assert!(parse(src).is_err(), "`repeat` must not parse");
     }
 }

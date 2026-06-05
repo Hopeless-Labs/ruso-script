@@ -131,7 +131,6 @@ kw_tls = @{ T ~ L ~ S }
 kw_session = @{ S ~ E ~ S ~ S ~ I ~ O ~ N }
 kw_read_max = @{ R ~ E ~ A ~ D ~ "_" ~ M ~ A ~ X }
 kw_read_idle = @{ R ~ E ~ A ~ D ~ "_" ~ I ~ D ~ L ~ E }
-kw_repeat = @{ R ~ E ~ P ~ E ~ A ~ T }
 kw_break = @{ B ~ R ~ E ~ A ~ K }
 
 // --- Literals ---
@@ -333,7 +332,6 @@ extract_stmt = {
 }
 
 if_block = { kw_if ~ qualified_expr ~ (pad ~ !kw_end ~ statement)* ~ pad? ~ kw_end }
-repeat_block = { kw_repeat ~ number ~ (pad ~ !kw_end ~ statement)* ~ pad? ~ kw_end }
 for_block = { kw_for ~ ident ~ kw_in ~ (list_lit | ident) ~ (pad ~ !kw_end ~ statement)* ~ pad? ~ kw_end }
 
 save_stmt = { kw_save ~ ident ~ kw_as ~ ident }
@@ -361,7 +359,6 @@ statement = {
     | assert_stmt
     | extract_stmt
     | if_block
-    | repeat_block
     | for_block
     | save_stmt
     | evidence_stmt

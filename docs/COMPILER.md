@@ -75,7 +75,7 @@ patch else_pc = code.len();
 | `parser/probes.rs` | `http` block items |
 | `parser/socket.rs` | `dns` / `tcp` / `udp` shared builder |
 | `parser/match_expr.rs` | qualified matchers, groups |
-| `parser/statements.rs` | send, if, for, flow, … (`repeat` kept only to reject with a migration error) |
+| `parser/statements.rs` | send, if, for, flow, … |
 | `parser/body.rs` | HTTP body objects |
 
 ### Nesting-depth guard
