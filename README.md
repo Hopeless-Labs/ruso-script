@@ -1,8 +1,8 @@
 # ruso-script
 
-> **Development status:** This project is under active development. The DSL, compiler output, and grammar may change without notice. Not recommended for production use yet.
+> **Development status:** This project is under active development. The RSL, compiler output, and grammar may change without notice. Not recommended for production use yet.
 
-Parser and compiler for the Ruso DSL (`.ruso` → `BytecodeProgram`).
+Parser and compiler for the Ruso Scripting Language (RSL): `.rsl` → `BytecodeProgram`.
 
 ## Documentation
 
@@ -11,9 +11,9 @@ Full developer docs are in **[`docs/`](docs/README.md)**:
 | Doc | Topic |
 |-----|--------|
 | [Architecture overview](docs/OVERVIEW.md) | How script, runtime, and CLI connect |
-| [DSL reference](docs/DSL_REFERENCE.md) | Syntax for `.ruso` checks |
+| [RSL reference](docs/RSL_REFERENCE.md) | Syntax for `.rsl` checks |
 | [Compiler](docs/COMPILER.md) | Parse → AST → bytecode |
-| [Examples](docs/EXAMPLES.md) | `examples/*.ruso` walkthrough |
+| [Examples](docs/EXAMPLES.md) | `examples/*.rsl` walkthrough |
 
 Runtime bytecode and VM: [ruso-runtime/docs](https://github.com/Hopeless-Labs/ruso-runtime/tree/main/docs). CLI: [ruso-cli/docs](https://github.com/Hopeless-Labs/ruso-cli/tree/main/docs).
 
@@ -43,7 +43,7 @@ src/
     grammar.pest      # syntax
     ast.rs
     parser/           # Pest builders
-examples/*.ruso       # example checks
+examples/*.rsl       # example checks
 docs/                 # documentation
 ```
 
@@ -51,8 +51,8 @@ docs/                 # documentation
 
 ```bash
 # Install ruso-cli from https://github.com/Hopeless-Labs/ruso-cli
-ruso validate --script examples/http_status_ok.ruso
-ruso scan --script examples/http_status_ok.ruso --target http://127.0.0.1:8080
+ruso validate --script examples/http_status_ok.rsl
+ruso scan --script examples/http_status_ok.rsl --target http://127.0.0.1:8080
 ```
 
 ## License

@@ -5,9 +5,9 @@ Documentation for the **ruso-script** crate: Pest grammar, AST, and compiler to 
 ## Reading order
 
 1. **[Architecture overview](OVERVIEW.md)** — how script, runtime, and CLI fit together.
-2. **[DSL reference](DSL_REFERENCE.md)** — everything you can write in `.ruso` files.
+2. **[RSL reference](RSL_REFERENCE.md)** — everything you can write in `.rsl` files.
 3. **[Compiler](COMPILER.md)** — `parse` → `ProgramSpec` + `compile` → `BytecodeProgram`.
-4. **[Examples](EXAMPLES.md)** — bundled `examples/*.ruso` explained.
+4. **[Examples](EXAMPLES.md)** — bundled `examples/*.rsl` explained.
 
 ## Quick start
 
@@ -21,7 +21,7 @@ let bytecode = compile(&program);
 
 ```bash
 # With ruso-cli installed (from ruso-cli repo)
-ruso validate --script examples/http_status_ok.ruso
+ruso validate --script examples/http_status_ok.rsl
 ```
 
 ## Dependency
@@ -41,7 +41,7 @@ Bytecode must target `ruso_runtime::VERSION` (currently **1**).
 | `src/script/parser/` | Pest → AST |
 | `src/spec_build.rs` | AST → `ProgramSpec` |
 | `src/compile.rs` | AST → `Vec<Instr>` |
-| `examples/*.ruso` | Example vulnerability checks |
+| `examples/*.rsl` | Example vulnerability checks |
 
 ## Runtime and CLI docs
 

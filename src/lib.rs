@@ -1,8 +1,9 @@
-//! Parse Ruso DSL source into an AST and compile to `ruso-runtime` bytecode.
+//! Parse Ruso Scripting Language (RSL) source into an AST and compile to
+//! `ruso-runtime` bytecode.
 //!
 //! # Developer documentation
 //!
-//! - [DSL reference](https://github.com/Hopeless-Labs/ruso-script/blob/main/docs/DSL_REFERENCE.md)
+//! - [Language reference](https://github.com/Hopeless-Labs/ruso-script/blob/main/docs/RSL_REFERENCE.md)
 //! - [Compiler](https://github.com/Hopeless-Labs/ruso-script/blob/main/docs/COMPILER.md)
 //! - [Examples](https://github.com/Hopeless-Labs/ruso-script/blob/main/docs/EXAMPLES.md)
 
@@ -111,14 +112,14 @@ mod tests {
 
     #[test]
     fn load_program_valid_example() {
-        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("examples/http_status_ok.ruso");
+        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("examples/http_status_ok.rsl");
         let program = load_program(&path).expect("example script should parse");
         assert!(!program.statements.is_empty());
     }
 
     #[test]
     fn bytecode_roundtrip_http_example() {
-        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("examples/http_status_ok.ruso");
+        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("examples/http_status_ok.rsl");
         let program = load_program(&path).unwrap();
         let original = compile_program(&program).unwrap();
         let bytes = encode_bytecode(&original);

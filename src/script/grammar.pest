@@ -1,4 +1,4 @@
-// Ruso script DSL grammar — see .notes.txt
+// Ruso Scripting Language (RSL) grammar — see .notes.txt
 
 WHITESPACE = _{ " " | "\t" }
 NEWLINE = _{ "\r\n" | "\n" | "\r" }

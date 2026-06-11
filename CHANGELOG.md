@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `ruso-script` (DSL parser + compiler) are documented
+All notable changes to `ruso-script` (RSL parser + compiler) are documented
 here. The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and the project aims to follow [Semantic Versioning](https://semver.org/).
 

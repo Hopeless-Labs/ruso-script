@@ -1,6 +1,6 @@
-# Ruso DSL reference
+# Ruso Scripting Language (RSL) reference
 
-Scripts use the `.ruso` extension. Syntax is line-oriented statements; blocks use `keyword name { … }` with `end` closing `if`, `match all`, `match any`, and `for`.
+Scripts use the `.rsl` extension. Syntax is line-oriented statements; blocks use `keyword name { … }` with `end` closing `if`, `match all`, `match any`, and `for`.
 
 Keywords are **case-insensitive** (`HTTP`, `http`, `Send` are equivalent).
 
@@ -61,9 +61,9 @@ All finding metadata lives in a single `metadata { … }` block at the top of th
 | `family` | `family "web"` single curated category (see below) |
 | `version` | `version "1.2.3"` SemVer string; required at publish time, optional for local validate/compile |
 
-`cve`, `cwe`, `references`, and `tags` stay stored as `Vec<String>` in metadata, findings, and reports. Use `cvss` for vectors and `cvss_score` for scores (e.g. base + temporal). Tags are unconstrained at the DSL level — downstream registries are free to enforce their own slug rules and per-script caps at publish time. `version` is a single optional string; repeated declarations take the last value. The registry rejects publishes without it.
+`cve`, `cwe`, `references`, and `tags` stay stored as `Vec<String>` in metadata, findings, and reports. Use `cvss` for vectors and `cvss_score` for scores (e.g. base + temporal). Tags are unconstrained at the RSL level — downstream registries are free to enforce their own slug rules and per-script caps at publish time. `version` is a single optional string; repeated declarations take the last value. The registry rejects publishes without it.
 
-`family` vs `tags`: `tags` are many-per-script, free-form discovery labels; `family` is a **single** structural category for "scan everything in this group" selection (à la Nessus/OpenVAS plugin families). The DSL accepts any string and stores the last-declared value; the **registry** enforces a curated set at publish time (currently `auth`, `cloud`, `database`, `dns`, `mail`, `misc`, `network`, `tls`, `web`) and rejects anything outside it. `family` is optional — omit it for uncategorised scripts.
+`family` vs `tags`: `tags` are many-per-script, free-form discovery labels; `family` is a **single** structural category for "scan everything in this group" selection (à la Nessus/OpenVAS plugin families). The RSL accepts any string and stores the last-declared value; the **registry** enforces a curated set at publish time (currently `auth`, `cloud`, `database`, `dns`, `mail`, `misc`, `network`, `tls`, `web`) and rejects anything outside it. `family` is optional — omit it for uncategorised scripts.
 
 ## Variables
 

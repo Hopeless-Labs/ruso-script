@@ -15,7 +15,7 @@ metadata {
     mitigation "Require AUTH, enable protected-mode, bind Redis to localhost or a private interface, and block port 6379 at the firewall"
 }
 
-# Host comes from CLI --target via {{scan_host}} (see DSL "Scan target variables").
+# Host comes from CLI --target via {{scan_host}} (see RSL "Scan target variables").
 # RESP `*1\r\n$4\r\nPING\r\n` as hex — text payloads are sent verbatim, so control
 # bytes (CRLF) must go through `payload bytes`, not a "\r\n" escape in a string.
 # read_idle lets the read return once Redis has sent +PONG and gone quiet.

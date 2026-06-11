@@ -1,15 +1,15 @@
 # Architecture overview
 
-Ruso splits **language** (script + compiler) from **execution** (runtime VM). The CLI is a thin driver. This keeps the bytecode contract stable while the DSL evolves.
+Ruso splits **language** (script + compiler) from **execution** (runtime VM). The CLI is a thin driver. This keeps the bytecode contract stable while RSL evolves.
 
-> **Canonical copy:** [ruso-runtime/docs/ARCHITECTURE.md](https://github.com/Hopeless-Labs/ruso-runtime/blob/main/docs/ARCHITECTURE.md) (bytecode, executor, networking). This file is duplicated here so DSL authors have system context in the **ruso-script** repo.
+> **Canonical copy:** [ruso-runtime/docs/ARCHITECTURE.md](https://github.com/Hopeless-Labs/ruso-runtime/blob/main/docs/ARCHITECTURE.md) (bytecode, executor, networking). This file is duplicated here so RSL authors have system context in the **ruso-script** repo.
 
 ## End-to-end flow
 
 ```mermaid
 flowchart LR
   subgraph script_crate [ruso-script]
-    SRC[".ruso source"]
+    SRC[".rsl source"]
     PEST[Pest parser]
     AST[AST]
     SPEC[ProgramSpec]
@@ -50,7 +50,7 @@ There is a single network opcode:
 Send { probe_id, optional_payload_override }
 ```
 
-`ProbeKind` in the probe table distinguishes HTTP vs DNS vs TCP vs UDP. Adding a Redis check does **not** add `OP_REDIS`; it adds a `tcp` probe with a RESP payload in a `.ruso` file.
+`ProbeKind` in the probe table distinguishes HTTP vs DNS vs TCP vs UDP. Adding a Redis check does **not** add `OP_REDIS`; it adds a `tcp` probe with a RESP payload in a `.rsl` file.
 
 Benefits:
 
@@ -65,7 +65,7 @@ Trade-off: very complex protocol state machines still need either richer generic
 ### `ruso-runtime`
 
 - **Public API**: `Executor`, `ExecutorConfig`, `BytecodeProgram`, `encode_bytecode` / `decode_bytecode`, `ProgramSpec`, `SocketProbeSpec`, contract types.
-- **Does not parse** `.ruso` source.
+- **Does not parse** `.rsl` source.
 - Owns all network I/O (reqwest, tokio sockets, tokio-rustls).
 
 Key modules:
@@ -96,7 +96,7 @@ Pipeline: `parse` → `build_program_spec` → `compile`.
 
 - Clap CLI: `scan`, `parse`, `compile`, `exec`.
 - Wires `ExecutorConfig` (base URL, timeout, TLS verify, proxy) from flags.
-- Discovers `.ruso` files and target lists for batch scans.
+- Discovers `.rsl` files and target lists for batch scans.
 
 ## Repositories (not a monorepo)
 
@@ -156,7 +156,7 @@ Flow instructions: `stop` (halt, no finding), `exit` (halt, finalize finding), `
 ## What Ruso is not (yet)
 
 - Not a scan orchestration platform (scheduling, workers, asset DB).
-- Not a plugin marketplace (checks are `.ruso` files you ship).
+- Not a plugin marketplace (checks are `.rsl` files you ship).
 - Not a full web crawler / Burp replacement.
 
 It **is** a solid **check execution engine** with a small, generic bytecode ISA.

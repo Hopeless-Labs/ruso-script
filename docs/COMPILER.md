@@ -1,6 +1,6 @@
 # Compiler (`ruso-script`)
 
-The compiler turns `.ruso` source into a `BytecodeProgram` consumed by `ruso-runtime`.
+The compiler turns `.rsl` source into a `BytecodeProgram` consumed by `ruso-runtime`.
 
 ## Public API
 
@@ -99,7 +99,7 @@ brace and keyword nesting.
 3. Copy in `spec_build::socket_spec`.  
 4. Extend `SocketProbeSpec` in runtime + `write_socket_probe` / `read_socket_probe`.  
 5. Implement behavior in `session.rs` / `executor.rs`.  
-6. Document in `DSL_REFERENCE.md` and bump `VERSION` if wire format changes.
+6. Document in `RSL_REFERENCE.md` and bump `VERSION` if wire format changes.
 
 ### Adding a statement
 
@@ -140,4 +140,4 @@ cargo test -p ruso-script
 
 ## Examples
 
-Bundled under `examples/*.ruso` in this repository — living documentation (see [EXAMPLES.md](EXAMPLES.md)).
+Bundled under `examples/*.rsl` in this repository — living documentation (see [EXAMPLES.md](EXAMPLES.md)).
