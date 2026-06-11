@@ -78,7 +78,7 @@ pub async fn run_bytecode(
         .await
 }
 
-/// Run a pre-shared [`Arc<BytecodeProgram>`] against a single target.
+/// Run a pre-shared `Arc<BytecodeProgram>` against a single target.
 ///
 /// Prefer this over [`run_bytecode`] when running the same compiled script
 /// against many targets — the program is cloned via `Arc::clone` (a
