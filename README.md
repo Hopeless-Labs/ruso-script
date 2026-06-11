@@ -1,5 +1,6 @@
 # ruso-script
 
+> [!NOTE]
 > **Development status:** under active development. The RSL, compiler output, and
 > grammar may change without notice. Not recommended for production use yet.
 
