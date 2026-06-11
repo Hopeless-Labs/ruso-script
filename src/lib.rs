@@ -3,9 +3,9 @@
 //!
 //! # Developer documentation
 //!
-//! - [Language reference](https://github.com/Hopeless-Labs/ruso-script/blob/main/docs/RSL_REFERENCE.md)
-//! - [Compiler](https://github.com/Hopeless-Labs/ruso-script/blob/main/docs/COMPILER.md)
-//! - [Examples](https://github.com/Hopeless-Labs/ruso-script/blob/main/docs/EXAMPLES.md)
+//! - [Language reference](https://docs.ruso.hopeless-labs.com/rsl/reference.html)
+//! - [Compiler](https://docs.ruso.hopeless-labs.com/internals/compiler.html)
+//! - [Examples](https://docs.ruso.hopeless-labs.com/rsl/examples.html)
 
 // `ParseError::Pest` wraps `pest::error::Error`, which carries spans + rule
 // chain for useful diagnostics and is naturally large. Boxing it would obscure
