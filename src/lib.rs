@@ -25,20 +25,29 @@ pub use script::{ParseError, parse};
 
 use std::path::Path;
 
+/// Error from [`load_program`]: reading the file failed, or its contents did
+/// not parse.
 #[derive(Debug, thiserror::Error)]
 pub enum LoadError {
+    /// The source file could not be read.
     #[error("failed to read {}: {source}", path.display())]
     Io {
+        /// The path that failed to read.
         path: std::path::PathBuf,
+        /// The underlying I/O error.
         source: std::io::Error,
     },
+    /// The source file was read but did not parse as RSL.
     #[error("failed to parse {}: {source}", path.display())]
     Parse {
+        /// The path that failed to parse.
         path: std::path::PathBuf,
+        /// The underlying parse error.
         source: ParseError,
     },
 }
 
+/// Read and parse an `.rsl` file into a [`Program`] AST.
 pub fn load_program(path: &Path) -> Result<Program, LoadError> {
     let source = std::fs::read_to_string(path).map_err(|err| LoadError::Io {
         path: path.to_path_buf(),
@@ -50,14 +59,17 @@ pub fn load_program(path: &Path) -> Result<Program, LoadError> {
     })
 }
 
+/// Compile a parsed [`Program`] into a [`BytecodeProgram`].
 pub fn compile_program(program: &Program) -> Result<BytecodeProgram, CompileError> {
     compile(program)
 }
 
+/// Compile a [`Program`] and serialize it to a raw `.rbc` byte buffer.
 pub fn compile_to_bytes(program: &Program) -> Result<Vec<u8>, CompileError> {
     Ok(encode_bytecode(&compile_program(program)?))
 }
 
+/// Compile a [`Program`] and run it against a single target in one step.
 pub async fn run(
     program: &Program,
     config: ruso_runtime::ExecutorConfig,
@@ -69,6 +81,7 @@ pub async fn run(
         .await
 }
 
+/// Run an already-compiled [`BytecodeProgram`] against a single target.
 pub async fn run_bytecode(
     bytecode: &BytecodeProgram,
     config: ruso_runtime::ExecutorConfig,
@@ -92,6 +105,7 @@ pub async fn run_program(
         .await
 }
 
+/// Decode a raw `.rbc` byte buffer and run it against a single target.
 pub async fn run_bytes(
     bytes: &[u8],
     config: ruso_runtime::ExecutorConfig,
