@@ -41,7 +41,6 @@ pub enum Stmt {
     Impact(String),
     Severity(Severity),
     Author(String),
-    Report(String),
     Cve(String),
     Cwe(String),
     Reference(String),
@@ -120,7 +119,6 @@ impl Stmt {
                 | Self::Impact(_)
                 | Self::Severity(_)
                 | Self::Author(_)
-                | Self::Report(_)
                 | Self::Cve(_)
                 | Self::Cwe(_)
                 | Self::Reference(_)

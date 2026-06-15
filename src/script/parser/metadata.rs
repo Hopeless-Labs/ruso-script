@@ -33,7 +33,6 @@ pub(crate) fn build_metadata(pair: Pair<Rule>) -> Result<Vec<Stmt>, ParseError> 
             value.map(|p| p.as_str()).unwrap_or("info"),
         ))],
         Rule::kw_author => vec![Stmt::Author(value.map(unquote_string).unwrap_or_default())],
-        Rule::kw_report => vec![Stmt::Report(value.map(unquote_string).unwrap_or_default())],
         Rule::kw_cve => value
             .map(parse_list_items)
             .unwrap_or_default()

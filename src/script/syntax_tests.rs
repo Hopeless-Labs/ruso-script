@@ -92,14 +92,6 @@ fn parse_author() {
 }
 
 #[test]
-fn parse_report() {
-    assert_eq!(
-        parse_metadata_one("report \"Laravel Debug Enabled\""),
-        Stmt::Report("Laravel Debug Enabled".into())
-    );
-}
-
-#[test]
 fn parse_cve() {
     let program = parse_program("metadata {\ncve [\"CVE-2024-1234\", \"CVE-2024-9999\"]\n}");
     assert_eq!(

@@ -50,7 +50,6 @@ kw_version = @{ V ~ E ~ R ~ S ~ I ~ O ~ N }
 kw_family = @{ F ~ A ~ M ~ I ~ L ~ Y }
 kw_metadata = @{ M ~ E ~ T ~ A ~ D ~ A ~ T ~ A }
 kw_evidence = @{ E ~ V ~ I ~ D ~ E ~ N ~ C_ ~ E }
-kw_report = @{ R ~ E ~ P ~ O ~ R ~ T }
 
 kw_http = @{ H ~ T ~ T ~ P }
 kw_method = @{ M ~ E ~ T ~ H ~ O ~ D }
@@ -293,7 +292,6 @@ metadata_stmt = {
     | kw_impact ~ string
     | kw_severity ~ severity_lit
     | kw_author ~ string
-    | kw_report ~ string
     | kw_cve ~ list_lit
     | kw_cwe ~ list_lit
     | kw_references ~ list_lit

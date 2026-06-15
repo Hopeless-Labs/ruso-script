@@ -15,7 +15,6 @@ pub fn build_program_spec(statements: &[Stmt]) -> ProgramSpec {
             Stmt::Impact(value) => spec.metadata.impact = Some(value.clone()),
             Stmt::Severity(value) => spec.metadata.severity = Some(value.clone()),
             Stmt::Author(value) => spec.metadata.author = Some(value.clone()),
-            Stmt::Report(value) => spec.metadata.report_title = Some(value.clone()),
             Stmt::Cve(value) => spec.metadata.cve.push(value.clone()),
             Stmt::Cwe(value) => spec.metadata.cwe.push(value.clone()),
             Stmt::Reference(value) => spec.metadata.references.push(value.clone()),

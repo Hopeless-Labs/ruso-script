@@ -11,9 +11,7 @@ use crate::spec_build::build_program_spec;
 
 #[derive(Debug, thiserror::Error)]
 pub enum CompileError {
-    #[error(
-        "script has match/evidence logic but no `name` or `report` metadata for the finding title"
-    )]
+    #[error("script has match/evidence logic but no `name` metadata for the finding title")]
     MissingFindingTitle,
     #[error("`mitigation` may appear at most once; it is a single free-text field, not a list")]
     DuplicateMitigation,
@@ -46,7 +44,7 @@ fn validate_finding_metadata(
     if !statements.iter().any(needs_finding_title) {
         return Ok(());
     }
-    if metadata.name.is_some() || metadata.report_title.is_some() {
+    if metadata.name.is_some() {
         return Ok(());
     }
     Err(CompileError::MissingFindingTitle)
@@ -304,7 +302,6 @@ impl Compiler {
             | Stmt::Impact(_)
             | Stmt::Severity(_)
             | Stmt::Author(_)
-            | Stmt::Report(_)
             | Stmt::Cve(_)
             | Stmt::Cwe(_)
             | Stmt::Reference(_)
