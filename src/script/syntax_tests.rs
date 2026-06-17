@@ -885,17 +885,20 @@ fn parse_save() {
 fn parse_evidence_body() {
     assert_eq!(
         parse_one("evidence login.body"),
-        Stmt::Evidence(EvidenceKind::BodyRef("login".into()))
+        Stmt::Evidence(EvidenceKind::Body {
+            target: "login".into(),
+            pattern: None,
+        })
     );
 }
 
 #[test]
-fn parse_evidence_regex() {
+fn parse_evidence_body_regex() {
     assert_eq!(
-        parse_one("evidence login regex 'APP_DEBUG=true'"),
-        Stmt::Evidence(EvidenceKind::Regex {
+        parse_one("evidence login.body regex 'APP_DEBUG=true'"),
+        Stmt::Evidence(EvidenceKind::Body {
             target: "login".into(),
-            pattern: "APP_DEBUG=true".into(),
+            pattern: Some("APP_DEBUG=true".into()),
         })
     );
 }
@@ -904,8 +907,41 @@ fn parse_evidence_regex() {
 fn parse_evidence_response() {
     assert_eq!(
         parse_one("evidence redis_ping.response"),
-        Stmt::Evidence(EvidenceKind::ResponseRef("redis_ping".into()))
+        Stmt::Evidence(EvidenceKind::Response {
+            target: "redis_ping".into(),
+            pattern: None,
+        })
     );
+}
+
+#[test]
+fn parse_evidence_header() {
+    assert_eq!(
+        parse_one("evidence home.header \"X-Powered-By\""),
+        Stmt::Evidence(EvidenceKind::Header {
+            target: "home".into(),
+            name: "X-Powered-By".into(),
+            pattern: None,
+        })
+    );
+}
+
+#[test]
+fn parse_evidence_header_regex() {
+    assert_eq!(
+        parse_one("evidence home.header \"Server\" regex 'nginx/[\\d.]+'"),
+        Stmt::Evidence(EvidenceKind::Header {
+            target: "home".into(),
+            name: "Server".into(),
+            pattern: Some("nginx/[\\d.]+".into()),
+        })
+    );
+}
+
+#[test]
+fn parse_evidence_implicit_regex_rejected() {
+    // The old source-less `evidence p regex '…'` form no longer parses.
+    assert!(parse("evidence login regex 'APP_DEBUG=true'").is_err());
 }
 
 // --- Control flow ---

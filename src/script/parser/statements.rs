@@ -3,7 +3,7 @@ use pest::iterators::Pair;
 use crate::script::ast::{EvidenceKind, ExtractSource, ListSource, Stmt, Value};
 use crate::script::grammar::Rule;
 use crate::script::parser::ParseError;
-use crate::script::parser::helpers::{parse_list_items, unquote_regex};
+use crate::script::parser::helpers::{parse_list_items, unquote_regex, unquote_string};
 use crate::script::parser::match_expr::build_qualified_expr;
 use crate::script::parser::socket::parse_payload_value;
 
@@ -139,31 +139,51 @@ fn build_extract_source(
 
 pub(crate) fn build_evidence(pair: Pair<Rule>) -> Result<Stmt, ParseError> {
     let mut inner = pair.into_inner();
-    inner.next();
+    inner.next(); // kw_evidence
     let target = inner
         .next()
         .filter(|p| p.as_rule() == Rule::target_ref)
         .ok_or(ParseError::UnexpectedRule(Rule::evidence_stmt))?;
     let probe = target.as_str().to_string();
-    let tail = inner
+    // `.` separator (every evidence form is source-qualified now).
+    inner
+        .next()
+        .filter(|p| p.as_rule() == Rule::dot)
+        .ok_or(ParseError::UnexpectedRule(Rule::evidence_stmt))?;
+    let field = inner
         .next()
         .ok_or(ParseError::UnexpectedRule(Rule::evidence_stmt))?;
-    match tail.as_rule() {
-        Rule::dot => {
-            let field = inner
-                .next()
-                .ok_or(ParseError::UnexpectedRule(Rule::evidence_stmt))?;
-            Ok(match field.as_rule() {
-                Rule::kw_body => Stmt::Evidence(EvidenceKind::BodyRef(probe)),
-                Rule::kw_response => Stmt::Evidence(EvidenceKind::ResponseRef(probe)),
-                rule => return Err(ParseError::UnexpectedRule(rule)),
-            })
-        }
-        Rule::kw_regex => Ok(Stmt::Evidence(EvidenceKind::Regex {
+    let kind = match field.as_rule() {
+        Rule::kw_body => EvidenceKind::Body {
             target: probe,
-            pattern: inner.next().map(unquote_regex).unwrap_or_default(),
-        })),
-        rule => Err(ParseError::UnexpectedRule(rule)),
+            pattern: opt_evidence_regex(&mut inner),
+        },
+        Rule::kw_response => EvidenceKind::Response {
+            target: probe,
+            pattern: opt_evidence_regex(&mut inner),
+        },
+        Rule::kw_header => {
+            let name = inner
+                .next()
+                .filter(|p| p.as_rule() == Rule::string)
+                .map(unquote_string)
+                .ok_or(ParseError::UnexpectedRule(Rule::evidence_stmt))?;
+            EvidenceKind::Header {
+                target: probe,
+                name,
+                pattern: opt_evidence_regex(&mut inner),
+            }
+        }
+        rule => return Err(ParseError::UnexpectedRule(rule)),
+    };
+    Ok(Stmt::Evidence(kind))
+}
+
+/// Consume an optional trailing `regex '<pattern>'` from an evidence rule.
+fn opt_evidence_regex(inner: &mut pest::iterators::Pairs<'_, Rule>) -> Option<String> {
+    match inner.next() {
+        Some(p) if p.as_rule() == Rule::kw_regex => inner.next().map(unquote_regex),
+        _ => None,
     }
 }
 
